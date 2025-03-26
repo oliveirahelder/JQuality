@@ -1,6 +1,6 @@
-# JQuality Frontend
+# JQuality
 
-Este projeto contém o frontend baseado em React para a ferramenta JQuality.
+Este projeto contém o frontend e o backend para a ferramenta JQuality, que permite gerenciar cenários de qualidade.
 
 ## Funcionalidades
 
