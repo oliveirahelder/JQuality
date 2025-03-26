@@ -1,10 +1,14 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # JQuality
 JQuality Test Tool
 =======
 # JQuality Frontend
+=======
+# JQuality
+>>>>>>> development
 
-Este projeto contém o frontend baseado em React para a ferramenta JQuality.
+Este projeto contém o frontend e o backend para a ferramenta JQuality, que permite gerenciar cenários de qualidade.
 
 ## Funcionalidades
 
@@ -79,5 +83,9 @@ JQuality/
 ## Tecnologias Utilizadas
 - **Frontend**: React
 - **Backend**: Node.js, Express
+<<<<<<< HEAD
+- **Banco de Dados**: SQLite
+>>>>>>> development
+=======
 - **Banco de Dados**: SQLite
 >>>>>>> development
