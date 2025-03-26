@@ -1,25 +1,39 @@
 import React, { useState, useEffect } from 'react';
 
 function App() {
+<<<<<<< HEAD
   // Estado para armazenar os cenários e os dados do formulário
   const [scenarios, setScenarios] = useState([]);
   const [formData, setFormData] = useState({ name: '', description: '' });
 
   // useEffect para buscar os cenários do backend ao carregar o componente
   useEffect(() => {
+=======
+  const [scenarios, setScenarios] = useState([]);
+  const [formData, setFormData] = useState({ name: '', description: '' });
+
+  useEffect(() => {
+    // Fetch scenarios from backend
+>>>>>>> development
     fetch('http://localhost:3000/api/scenarios')
       .then((res) => res.json())
       .then((data) => setScenarios(data))
       .catch((err) => console.error('Error fetching scenarios:', err));
   }, []);
 
+<<<<<<< HEAD
   // Atualiza os dados do formulário conforme o usuário digita
+=======
+>>>>>>> development
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
+<<<<<<< HEAD
   // Envia os dados do formulário para criar um novo cenário
+=======
+>>>>>>> development
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -36,7 +50,10 @@ function App() {
     }
   };
 
+<<<<<<< HEAD
   // Atualiza um cenário existente
+=======
+>>>>>>> development
   const handleEdit = async (id) => {
     const updatedScenario = { ...formData, status: 'updated' }; // Exemplo de atualização
     try {
@@ -52,7 +69,10 @@ function App() {
     }
   };
 
+<<<<<<< HEAD
   // Exclui um cenário existente
+=======
+>>>>>>> development
   const handleDelete = async (id) => {
     try {
       await fetch(`http://localhost:3000/api/scenarios/${id}`, { method: 'DELETE' });
