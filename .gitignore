@@ -1,0 +1,12 @@
+node_modules/
+frontend/build/
+dist/
+*.log
+backend/jquality.db
+.cache/
+.vscode/
+coverage/
+frontend/static/
+*.tmp
+*.swp
+*.swo
