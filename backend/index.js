@@ -32,7 +32,7 @@ db.serialize(() => {
 
 // Rota principal do backend
 app.get('/', (req, res) => {
-  res.send('Welcome to JQuality Backend!');
+  res.send('Welcome to JQuality Backend!!');
 });
 
 // Rota para listar cenários

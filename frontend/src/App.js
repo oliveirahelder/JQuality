@@ -1,13 +1,20 @@
 import './style.css';
 import React, { useState, useEffect } from 'react';
+import ScenarioList from './ScenarioList';
+import ScenarioForm from './ScenarioForm';
 
 function App() {
-  const [scenarios, setScenarios] = useState([]);
+  const [showForm, setShowForm] = useState(false); // Controlar o formulário
+  const [showScenarios, setShowScenarios] = useState(true); // Controlar a lista de cenários
   const [formData, setFormData] = useState({ name: '', description: '', status: 'active' });
   const [loading, setLoading] = useState(true);
+  const [scenarios, setScenarios] = useState([]);
   const [editingId, setEditingId] = useState(null);
 
-  // Buscar cenários do backend ao carregar o componente
+  const toggleForm = () => {
+    setShowForm(!showForm); // Alterna entre mostrar e esconder o formulário
+  };
+
   useEffect(() => {
     setLoading(true);
     fetch('http://localhost:3000/api/scenarios')
@@ -27,20 +34,15 @@ function App() {
       });
   }, []);
 
-  // Atualizar os dados do formulário conforme o usuário digita
   const handleChange = (e) => {
     const { name, value } = e.target;
-    console.log('Campo alterado:', { [name]: value }); // Log para verificar o valor
     setFormData({ ...formData, [name]: value });
   };
 
-  // Criar ou editar um cenário
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (editingId) {
-      // Editar cenário existente
       try {
-        console.log('Dados enviados para o backend:', formData);
         const response = await fetch(`http://localhost:3000/api/scenarios/${editingId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -49,12 +51,11 @@ function App() {
         const updatedScenario = await response.json();
         setScenarios(scenarios.map((s) => (s.id === editingId ? updatedScenario : s)));
         setEditingId(null);
-        setFormData({ name: '', description: '' , status: 'active'});
+        setFormData({ name: '', description: '', status: 'active' });
       } catch (error) {
         console.error('Erro ao editar cenário:', error);
       }
     } else {
-      // Criar novo cenário
       try {
         const response = await fetch('http://localhost:3000/api/scenarios', {
           method: 'POST',
@@ -63,21 +64,20 @@ function App() {
         });
         const newScenario = await response.json();
         setScenarios([...scenarios, newScenario]);
-        setFormData({ name: '', description: '' });
+        setFormData({ name: '', description: '', status: 'active' });
       } catch (error) {
         console.error('Erro ao criar cenário:', error);
       }
     }
   };
 
-  // Carregar dados do cenário no formulário para edição
   const handleEdit = (id) => {
     const scenario = scenarios.find((s) => s.id === id);
-    setFormData({ name: scenario.name, description: scenario.description, status:scenario.status });
+    setFormData({ name: scenario.name, description: scenario.description, status: scenario.status });
     setEditingId(id);
+    setShowForm(true); // Mostra o formulário ao editar
   };
 
-  // Excluir um cenário existente
   const handleDelete = async (id) => {
     try {
       await fetch(`http://localhost:3000/api/scenarios/${id}`, { method: 'DELETE' });
@@ -90,55 +90,35 @@ function App() {
   return (
     <div>
       <h1>JQuality Tool</h1>
-      <h2>Scenarios</h2>
-      {loading ? (
-        <p>Loading scenarios...</p>
-      ) : (
-        <ul>
-          {scenarios.map((scenario) => (
-            <li key={scenario.id}>
-              <strong>ID</strong> {scenario.id} - <strong>Name:</strong> {scenario.name} - <strong>Description:</strong> {scenario.description} - <strong>Status:</strong> {scenario.status}
-              <button onClick={() => handleEdit(scenario.id)}>Edit</button>
-              <button onClick={() => handleDelete(scenario.id)}>Delete</button>
-            </li>
-          ))}
-        </ul>
+  
+      {/* Botão para alternar o formulário */}
+      <button onClick={() => setShowForm(!showForm)}>
+        {editingId ? 'Edit Scenario' : showForm ? 'Hide Form' : 'Create Scenario'}
+      </button>
+  
+      {/* Formulário condicional */}
+      {showForm && (
+        <ScenarioForm
+          formData={formData}
+          onChange={handleChange}
+          onSubmit={handleSubmit}
+          editingId={editingId}
+        />
       )}
-      <h2>{editingId ? 'Edit Scenario' : 'Create Scenario'}</h2>
-          <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="name">Name:</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-          />
-        </div>
-        <div>
-          <label htmlFor="description">Description:</label>
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-          />
-        </div>
-        <div>
-          <label htmlFor="status">Status:</label>
-          <select
-            id="status"
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-          >
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </div>
-        <button type="submit">{editingId ? 'Update' : 'Create'}</button>
-      </form>
+  
+      {/* Botão para alternar a lista de cenários */}
+      <button onClick={() => setShowScenarios(!showScenarios)}>
+        {showScenarios ? 'Hide Scenarios' : 'Show Scenarios'}
+      </button>
+  
+      {/* Lista de cenários condicional */}
+      {showScenarios && (
+        <ScenarioList
+          scenarios={scenarios}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      )}
     </div>
   );
 }
