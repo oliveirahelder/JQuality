@@ -1,65 +1,86 @@
 import React, { useState, useEffect } from 'react';
 
 function App() {
-  // Estado para armazenar os cenários e os dados do formulário
   const [scenarios, setScenarios] = useState([]);
   const [formData, setFormData] = useState({ name: '', description: '' });
+  const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState(null);
 
-  // useEffect para buscar os cenários do backend ao carregar o componente
+  // Buscar cenários do backend ao carregar o componente
   useEffect(() => {
-    // Fetch scenarios from backend
+    setLoading(true);
     fetch('http://localhost:3000/api/scenarios')
-      .then((res) => res.json())
-      .then((data) => setScenarios(data))
-      .catch((err) => console.error('Error fetching scenarios:', err));
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('Erro ao buscar cenários');
+        }
+        return res.json();
+      })
+      .then((data) => {
+        setScenarios(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Erro ao buscar cenários:', err);
+        setLoading(false);
+      });
   }, []);
 
-  // Atualiza os dados do formulário conforme o usuário digita
+  // Atualizar os dados do formulário conforme o usuário digita
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // Envia os dados do formulário para criar um novo cenário
+  // Criar ou editar um cenário
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const response = await fetch('http://localhost:3000/api/scenarios', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      const newScenario = await response.json();
-      setScenarios([...scenarios, newScenario]);
-      setFormData({ name: '', description: '' });
-    } catch (error) {
-      console.error('Error creating scenario:', error);
+    if (editingId) {
+      // Editar cenário existente
+      try {
+        const response = await fetch(`http://localhost:3000/api/scenarios/${editingId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
+        const updatedScenario = await response.json();
+        setScenarios(scenarios.map((s) => (s.id === editingId ? updatedScenario : s)));
+        setEditingId(null);
+        setFormData({ name: '', description: '' });
+      } catch (error) {
+        console.error('Erro ao editar cenário:', error);
+      }
+    } else {
+      // Criar novo cenário
+      try {
+        const response = await fetch('http://localhost:3000/api/scenarios', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
+        const newScenario = await response.json();
+        setScenarios([...scenarios, newScenario]);
+        setFormData({ name: '', description: '' });
+      } catch (error) {
+        console.error('Erro ao criar cenário:', error);
+      }
     }
   };
 
-  // Atualiza um cenário existente
-  const handleEdit = async (id) => {
-    const updatedScenario = { ...formData, status: 'updated' }; // Exemplo de atualização
-    try {
-      const response = await fetch(`http://localhost:3000/api/scenarios/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedScenario),
-      });
-      const result = await response.json();
-      setScenarios(scenarios.map((s) => (s.id === id ? result : s)));
-    } catch (error) {
-      console.error('Error editing scenario:', error);
-    }
+  // Carregar dados do cenário no formulário para edição
+  const handleEdit = (id) => {
+    const scenario = scenarios.find((s) => s.id === id);
+    setFormData({ name: scenario.name, description: scenario.description });
+    setEditingId(id);
   };
 
-  // Exclui um cenário existente
+  // Excluir um cenário existente
   const handleDelete = async (id) => {
     try {
       await fetch(`http://localhost:3000/api/scenarios/${id}`, { method: 'DELETE' });
       setScenarios(scenarios.filter((s) => s.id !== id));
     } catch (error) {
-      console.error('Error deleting scenario:', error);
+      console.error('Erro ao excluir cenário:', error);
     }
   };
 
@@ -67,16 +88,20 @@ function App() {
     <div>
       <h1>JQuality Tool</h1>
       <h2>Scenarios</h2>
-      <ul>
-        {scenarios.map((scenario) => (
-          <li key={scenario.id}>
-            <strong>{scenario.name}</strong>: {scenario.description} ({scenario.status})
-            <button onClick={() => handleEdit(scenario.id)}>Edit</button>
-            <button onClick={() => handleDelete(scenario.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
-      <h2>Create Scenario</h2>
+      {loading ? (
+        <p>Loading scenarios...</p>
+      ) : (
+        <ul>
+          {scenarios.map((scenario) => (
+            <li key={scenario.id}>
+              <strong>{scenario.name}</strong>: {scenario.description} ({scenario.status})
+              <button onClick={() => handleEdit(scenario.id)}>Edit</button>
+              <button onClick={() => handleDelete(scenario.id)}>Delete</button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <h2>{editingId ? 'Edit Scenario' : 'Create Scenario'}</h2>
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="name">Name:</label>
@@ -97,7 +122,7 @@ function App() {
             onChange={handleChange}
           />
         </div>
-        <button type="submit">Create</button>
+        <button type="submit">{editingId ? 'Update' : 'Create'}</button>
       </form>
     </div>
   );

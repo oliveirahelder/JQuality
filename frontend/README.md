@@ -1,19 +1,18 @@
 # JQuality Frontend
 
-<<<<<<< HEAD
 This folder will contain the React-based frontend for the JQuality tool.
-=======
-Este projeto contém o frontend baseado em React para a ferramenta JQuality.
 
 ## Funcionalidades
 
-### Frontend
+### Frontend Setup
+
 - Listagem de cenários.
 - Criação de novos cenários.
 - Edição de cenários existentes.
 - Exclusão de cenários.
 
-### Backend
+### Backend Setup
+
 - API RESTful desenvolvida com Node.js e SQLite.
 - Endpoints para gerenciar cenários:
   - `GET /api/scenarios`: Lista todos os cenários.
@@ -24,42 +23,57 @@ Este projeto contém o frontend baseado em React para a ferramenta JQuality.
 ## Como executar
 
 ### Pré-requisitos
+
 - Node.js instalado.
 - SQLite instalado.
 
 ### Backend
+
 1. Navegue até a pasta `backend`:
+
    ```bash
    cd backend
-   ```
+   ```plaintext
+
 2. Instale as dependências:
+
    ```bash
    npm install
-   ```
+   ```plaintext
+
 3. Inicie o servidor:
+
    ```bash
    npm start
    ```
+
 4. O backend estará disponível em `http://localhost:3000`.
 
 ### Frontend
+
 1. Navegue até a pasta `frontend`:
+
    ```bash
    cd frontend
    ```
+
 2. Instale as dependências:
+
    ```bash
    npm install
    ```
+
 3. Inicie o servidor:
+
    ```bash
    npm start
    ```
+
 4. O frontend estará disponível em `http://localhost:3001`.
 
 ## Estrutura do Projeto
 
-```
+```plaintext
 JQuality/
 ├── backend/
 │   ├── index.js          # Servidor Node.js
@@ -76,7 +90,9 @@ JQuality/
 ```
 
 ## Tecnologias Utilizadas
+
 - **Frontend**: React
 - **Backend**: Node.js, Express
 - **Banco de Dados**: SQLite
+
 >>>>>>> development

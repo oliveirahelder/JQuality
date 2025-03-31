@@ -1,9 +1,11 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose(); // Substituir mysql2 por sqlite3
+const sqlite3 = require('sqlite3').verbose();
 const app = express();
 const port = 3000;
+const cors = require('cors');
 
 app.use(express.json());
+app.use(cors());
 
 // Configuração do banco de dados SQLite
 const db = new sqlite3.Database('./jquality.db', (err) => {
@@ -40,6 +42,21 @@ app.get('/api/scenarios', (req, res) => {
       res.status(500).json({ error: err.message });
     } else {
       res.json(rows);
+    }
+  });
+});
+
+// Rota para buscar um cenário específico pelo ID
+app.get('/api/scenarios/:id', (req, res) => {
+  const { id } = req.params;
+  const query = 'SELECT * FROM scenarios WHERE id = ?';
+  db.get(query, [id], (err, row) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else if (!row) {
+      res.status(404).json({ message: 'Scenario not found' });
+    } else {
+      res.json(row);
     }
   });
 });
