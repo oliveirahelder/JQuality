@@ -16,6 +16,7 @@ pids/
 # Dependency directories
 frontend/node_modules/
 backend/node_modules/
+*.package-lock.json/
 
 # Build outputs
 frontend/build/
@@ -75,6 +76,7 @@ frontend/src/*.test.js
 frontend/src/*.spec.js
 frontend/src/__tests__/
 frontend/src/__mocks__/
+frontend/node_modules
 
 # Ignore specific files in the backend
 backend/src/*.test.js
