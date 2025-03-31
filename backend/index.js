@@ -78,6 +78,7 @@ app.post('/api/scenarios', (req, res) => {
 app.put('/api/scenarios/:id', (req, res) => {
   const { id } = req.params;
   const { name, description, status } = req.body;
+  console.log('Dados recebidos para atualização:', { id, name, description, status });
   const query = `
     UPDATE scenarios
     SET name = ?, description = ?, status = ?, updated_at = CURRENT_TIMESTAMP
@@ -105,7 +106,11 @@ app.delete('/api/scenarios/:id', (req, res) => {
       res.status(404).json({ message: 'Scenario not found' });
     } else {
       res.status(204).send();
+    } if (this.changes > 0) {
+      // Cenário excluído com sucesso             
+      console.log('Cenário excluído com sucesso:', id);
     }
+    
   });
 });
 

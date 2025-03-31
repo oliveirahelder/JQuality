@@ -1,8 +1,9 @@
+import './style.css';
 import React, { useState, useEffect } from 'react';
 
 function App() {
   const [scenarios, setScenarios] = useState([]);
-  const [formData, setFormData] = useState({ name: '', description: '' });
+  const [formData, setFormData] = useState({ name: '', description: '', status: 'active' });
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
 
@@ -29,6 +30,7 @@ function App() {
   // Atualizar os dados do formulário conforme o usuário digita
   const handleChange = (e) => {
     const { name, value } = e.target;
+    console.log('Campo alterado:', { [name]: value }); // Log para verificar o valor
     setFormData({ ...formData, [name]: value });
   };
 
@@ -38,6 +40,7 @@ function App() {
     if (editingId) {
       // Editar cenário existente
       try {
+        console.log('Dados enviados para o backend:', formData);
         const response = await fetch(`http://localhost:3000/api/scenarios/${editingId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -46,7 +49,7 @@ function App() {
         const updatedScenario = await response.json();
         setScenarios(scenarios.map((s) => (s.id === editingId ? updatedScenario : s)));
         setEditingId(null);
-        setFormData({ name: '', description: '' });
+        setFormData({ name: '', description: '' , status: 'active'});
       } catch (error) {
         console.error('Erro ao editar cenário:', error);
       }
@@ -70,7 +73,7 @@ function App() {
   // Carregar dados do cenário no formulário para edição
   const handleEdit = (id) => {
     const scenario = scenarios.find((s) => s.id === id);
-    setFormData({ name: scenario.name, description: scenario.description });
+    setFormData({ name: scenario.name, description: scenario.description, status:scenario.status });
     setEditingId(id);
   };
 
@@ -94,7 +97,7 @@ function App() {
         <ul>
           {scenarios.map((scenario) => (
             <li key={scenario.id}>
-              <strong>{scenario.name}</strong>: {scenario.description} ({scenario.status})
+              <strong>ID</strong> {scenario.id} - <strong>Name:</strong> {scenario.name} - <strong>Description:</strong> {scenario.description} - <strong>Status:</strong> {scenario.status}
               <button onClick={() => handleEdit(scenario.id)}>Edit</button>
               <button onClick={() => handleDelete(scenario.id)}>Delete</button>
             </li>
@@ -102,7 +105,7 @@ function App() {
         </ul>
       )}
       <h2>{editingId ? 'Edit Scenario' : 'Create Scenario'}</h2>
-      <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="name">Name:</label>
           <input
@@ -121,6 +124,18 @@ function App() {
             value={formData.description}
             onChange={handleChange}
           />
+        </div>
+        <div>
+          <label htmlFor="status">Status:</label>
+          <select
+            id="status"
+            name="status"
+            value={formData.status}
+            onChange={handleChange}
+          >
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
         </div>
         <button type="submit">{editingId ? 'Update' : 'Create'}</button>
       </form>
