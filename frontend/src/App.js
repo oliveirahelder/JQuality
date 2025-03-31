@@ -11,9 +11,9 @@ function App() {
   const [scenarios, setScenarios] = useState([]);
   const [editingId, setEditingId] = useState(null);
 
-  const toggleForm = () => {
-    setShowForm(!showForm); // Alterna entre mostrar e esconder o formulário
-  };
+  // const toggleForm = () => {
+  //   setShowForm(!showForm); // Alterna entre mostrar e esconder o formulário
+  // };
 
   useEffect(() => {
     setLoading(true);

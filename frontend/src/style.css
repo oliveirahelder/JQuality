@@ -114,3 +114,53 @@ button[type="submit"] {
 button[type="submit"]:hover {
   background-color: #357ab8;
 }
+/* Estilo geral para o badge */
+.status-badge {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: white;
+}
+
+/* Badge para status ativo */
+.status-active {
+  background-color: #28a745; /* Verde */
+}
+
+/* Badge para status inativo */
+.status-inactive {
+  background-color: #dc3545; /* Vermelho */
+}
+/* Estilo para os botões de ação (editar e excluir) */
+.action-buttons {
+  display: flex;
+  gap: 10px; /* Espaço entre os botões */
+}
+
+.action-buttons button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 16px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.action-buttons button:hover {
+  background-color: #357ab8;
+}
+
+.action-buttons button svg {
+  width: 20px;
+  height: 20px;
+}
