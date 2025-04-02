@@ -88,4 +88,4 @@ backend/src/__mocks__/
 *.tsbuildinfo
 frontend/**/*.js.map
 backend/**/*.js.map
-node_modules
+fontend/node_modules/
