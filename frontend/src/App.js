@@ -1,123 +1,118 @@
+import './style.css';
 import React, { useState, useEffect } from 'react';
+import ScenarioList from './ScenarioList';
+import ScenarioForm from './ScenarioForm';
 
 function App() {
-<<<<<<< HEAD
-  // Estado para armazenar os cenários e os dados do formulário
+  const [showDrawer, setShowDrawer] = useState(false); // Controlar o menu lateral
+  const [showScenarios, setShowScenarios] = useState(true); // Controlar a lista de cenários
+  const [formData, setFormData] = useState({ name: '', description: '', status: 'active' });
   const [scenarios, setScenarios] = useState([]);
-  const [formData, setFormData] = useState({ name: '', description: '' });
-
-  // useEffect para buscar os cenários do backend ao carregar o componente
-  useEffect(() => {
-=======
-  const [scenarios, setScenarios] = useState([]);
-  const [formData, setFormData] = useState({ name: '', description: '' });
+  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
-    // Fetch scenarios from backend
->>>>>>> development
+    setShowDrawer(false); // Garante que o menu lateral esteja fechado ao carregar
     fetch('http://localhost:3000/api/scenarios')
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('Erro ao buscar cenários');
+        }
+        return res.json();
+      })
       .then((data) => setScenarios(data))
-      .catch((err) => console.error('Error fetching scenarios:', err));
+      .catch((err) => console.error('Erro ao buscar cenários:', err));
   }, []);
 
-<<<<<<< HEAD
-  // Atualiza os dados do formulário conforme o usuário digita
-=======
->>>>>>> development
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-<<<<<<< HEAD
-  // Envia os dados do formulário para criar um novo cenário
-=======
->>>>>>> development
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const response = await fetch('http://localhost:3000/api/scenarios', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      const newScenario = await response.json();
-      setScenarios([...scenarios, newScenario]);
-      setFormData({ name: '', description: '' });
-    } catch (error) {
-      console.error('Error creating scenario:', error);
+    if (editingId) {
+      try {
+        const response = await fetch(`http://localhost:3000/api/scenarios/${editingId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
+        const updatedScenario = await response.json();
+        setScenarios(scenarios.map((s) => (s.id === editingId ? updatedScenario : s)));
+        setEditingId(null);
+      } catch (error) {
+        console.error('Erro ao editar cenário:', error);
+      }
+    } else {
+      try {
+        const response = await fetch('http://localhost:3000/api/scenarios', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
+        const newScenario = await response.json();
+        setScenarios([...scenarios, newScenario]);
+      } catch (error) {
+        console.error('Erro ao criar cenário:', error);
+      }
     }
+    setFormData({ name: '', description: '', status: 'active' });
+    setShowDrawer(false); // Fecha o menu lateral
   };
 
-<<<<<<< HEAD
-  // Atualiza um cenário existente
-=======
->>>>>>> development
-  const handleEdit = async (id) => {
-    const updatedScenario = { ...formData, status: 'updated' }; // Exemplo de atualização
-    try {
-      const response = await fetch(`http://localhost:3000/api/scenarios/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedScenario),
-      });
-      const result = await response.json();
-      setScenarios(scenarios.map((s) => (s.id === id ? result : s)));
-    } catch (error) {
-      console.error('Error editing scenario:', error);
-    }
+  const handleEdit = (id) => {
+    const scenario = scenarios.find((s) => s.id === id);
+    setFormData({ name: scenario.name, description: scenario.description, status: scenario.status });
+    setEditingId(id);
+    setShowDrawer(true); // Abre o menu lateral para edição
   };
 
-<<<<<<< HEAD
-  // Exclui um cenário existente
-=======
->>>>>>> development
   const handleDelete = async (id) => {
     try {
       await fetch(`http://localhost:3000/api/scenarios/${id}`, { method: 'DELETE' });
       setScenarios(scenarios.filter((s) => s.id !== id));
     } catch (error) {
-      console.error('Error deleting scenario:', error);
+      console.error('Erro ao excluir cenário:', error);
     }
   };
 
   return (
     <div>
       <h1>JQuality Tool</h1>
-      <h2>Scenarios</h2>
-      <ul>
-        {scenarios.map((scenario) => (
-          <li key={scenario.id}>
-            <strong>{scenario.name}</strong>: {scenario.description} ({scenario.status})
-            <button onClick={() => handleEdit(scenario.id)}>Edit</button>
-            <button onClick={() => handleDelete(scenario.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
-      <h2>Create Scenario</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="name">Name:</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-          />
+
+      {/* Botões principais */}
+      <div className="main-buttons">
+        <button onClick={() => setShowDrawer(true)}>Create Scenario</button>
+        <button onClick={() => setShowScenarios(!showScenarios)}>
+          {showScenarios ? 'Hide Scenarios' : 'Show Scenarios'}
+        </button>
+      </div>
+
+      {/* Menu lateral */}
+      {showDrawer && <div className="drawer-overlay open" onClick={() => setShowDrawer(false)}></div>}
+      <div className={`drawer ${showDrawer ? 'open' : ''}`}>
+        <div className="drawer-header">
+          <h2>{editingId ? 'Edit Scenario' : 'Create Scenario'}</h2>
+          <button className="drawer-close" onClick={() => setShowDrawer(false)}>
+            &times;
+          </button>
         </div>
-        <div>
-          <label htmlFor="description">Description:</label>
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-          />
-        </div>
-        <button type="submit">Create</button>
-      </form>
+        <ScenarioForm
+          formData={formData}
+          onChange={handleChange}
+          onSubmit={handleSubmit}
+          editingId={editingId}
+        />
+      </div>
+
+      {/* Lista de cenários */}
+      {showScenarios && (
+        <ScenarioList
+          scenarios={scenarios}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      )}
     </div>
   );
 }
