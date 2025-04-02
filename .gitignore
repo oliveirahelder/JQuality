@@ -76,7 +76,7 @@ frontend/src/*.test.js
 frontend/src/*.spec.js
 frontend/src/__tests__/
 frontend/src/__mocks__/
-frontend/node_modules
+frontend/node_modules/
 
 # Ignore specific files in the backend
 backend/src/*.test.js
