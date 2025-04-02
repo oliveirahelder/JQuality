@@ -31,12 +31,12 @@ db.serialize(() => {
 });
 
 // Rota principal do backend
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
   res.send('Welcome to JQuality Backend!!');
 });
 
 // Rota para listar cenários
-app.get('/api/scenarios', (req, res) => {
+app.get('/api/scenarios', (_req, res) => {
   db.all('SELECT * FROM scenarios', [], (err, rows) => {
     if (err) {
       res.status(500).json({ error: err.message });

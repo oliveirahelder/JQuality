@@ -8,62 +8,185 @@ body {
 }
 
 h1, h2 {
-  text-align: center;
+  margin: 0;
+  padding: 10px 20px;
   color: #4a90e2;
 }
 
 h1 {
-  margin-top: 20px;
+  font-size: 24px;
+  text-align: center;
 }
 
 h2 {
-  margin-top: 10px;
+  font-size: 20px;
+  margin-top: 20px;
 }
 
-/* Lista de cenários */
-ul {
-  list-style: none;
-  padding: 0;
-  margin: 20px auto;
-  max-width: 1000px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-}
-
-li {
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+/* Botões principais */
+.main-buttons {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
+  flex-direction: column; /* Empilha os botões verticalmente */
+  gap: 15px; /* Espaçamento entre os botões */
+  margin: 20px auto;
+  max-width: 300px; /* Centraliza os botões e limita a largura */
 }
 
-li strong {
-  color: #4a90e2;
-  font-size: 18px;
-}
-
-button {
+.main-buttons button {
+  width: 100%; /* Botões ocupam toda a largura */
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 6px;
   background-color: #4a90e2;
   color: white;
   border: none;
-  padding: 10px 15px;
-  border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
-button:hover {
+.main-buttons button:hover {
   background-color: #357ab8;
 }
 
-button:disabled {
+.main-buttons button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+
+/* Tabela moderna estilo Excel */
+.scenario-table {
+  width: 100%;
+  max-width: 1000px;
+  margin: 20px auto;
+  border-collapse: collapse; /* Remove espaços entre bordas */
+  background-color: #fff;
+  border: 1px solid #ddd; /* Borda externa */
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra para destacar a tabela */
+  border-radius: 8px; /* Bordas arredondadas */
+  overflow: hidden;
+}
+.scenario-table th,
+.scenario-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border: 1px solid #ddd; /* Bordas entre células */
+}
+.scenario-table th {
+  background-color: #4a90e2; /* Fundo azul para o cabeçalho */
+  color: white; /* Texto branco */
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+.scenario-table tr:nth-child(even) {
+  background-color: #f9f9f9; /* Fundo alternado para linhas pares */
+}
+.scenario-table tr:hover {
+  background-color: #f1f1f1; /* Destaque ao passar o mouse */
+}
+
+.scenario-table td {
+  font-size: 14px;
+}
+
+.scenario-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.scenario-actions button {
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.scenario-actions button.edit {
+  background-color: #4a90e2;
+  color: white;
+}
+
+.scenario-actions button.edit:hover {
+  background-color: #357ab8;
+}
+
+.scenario-actions button.delete {
+  background-color: #dc3545;
+  color: white;
+}
+
+.scenario-actions button.delete:hover {
+  background-color: #a71d2a;
+}
+
+/* Responsividade para dispositivos móveis */
+@media (max-width: 600px) {
+  .scenario-table {
+    font-size: 12px;
+  }
+
+  .scenario-actions button {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+}
+/* Lista de cenários */
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 20px;
+}
+
+li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: #fff;
+  margin-bottom: 10px;
+}
+
+li strong {
+  color: #4a90e2;
+  font-size: 16px;
+}
+
+/* Botões de ação (editar e excluir) */
+.action-buttons {
+  display: flex;
+  gap: 10px; /* Espaçamento entre os botões */
+}
+
+.action-buttons button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 16px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.action-buttons button:hover {
+  background-color: #357ab8;
+}
+
+.action-buttons button svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* Formulário */
@@ -80,14 +203,15 @@ form {
 }
 
 form div {
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: bold;
   font-size: 14px;
+  font-weight: bold;
+  color: #333;
 }
 
 input, textarea, select {
@@ -114,6 +238,7 @@ button[type="submit"] {
 button[type="submit"]:hover {
   background-color: #357ab8;
 }
+
 /* Estilo geral para o badge */
 .status-badge {
   display: inline-block;
@@ -134,33 +259,56 @@ button[type="submit"]:hover {
 .status-inactive {
   background-color: #dc3545; /* Vermelho */
 }
-/* Estilo para os botões de ação (editar e excluir) */
-.action-buttons {
+/* Menu lateral (drawer) */
+.drawer {
+  position: fixed;
+  top: 0;
+  right: -300px; /* Escondido fora da tela inicialmente */
+  width: 300px;
+  height: 100%;
+  background-color: #fff;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+  transition: right 0.3s ease;
+  z-index: 1000;
+  padding: 20px;
   display: flex;
-  gap: 10px; /* Espaço entre os botões */
+  flex-direction: column;
+  gap: 15px;
 }
 
-.action-buttons button {
+.drawer.open {
+  right: 0; /* Mostra o menu lateral */
+}
+
+.drawer-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  padding: 8px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  font-size: 16px;
-  background-color: #4a90e2;
-  color: white;
+}
+
+.drawer-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.drawer-close {
+  background: none;
   border: none;
+  font-size: 20px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
 }
 
-.action-buttons button:hover {
-  background-color: #357ab8;
+.drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  display: none;
 }
 
-.action-buttons button svg {
-  width: 20px;
-  height: 20px;
+.drawer-overlay.open {
+  display: block;
 }

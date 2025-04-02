@@ -4,19 +4,14 @@ import ScenarioList from './ScenarioList';
 import ScenarioForm from './ScenarioForm';
 
 function App() {
-  const [showForm, setShowForm] = useState(false); // Controlar o formulário
+  const [showDrawer, setShowDrawer] = useState(false); // Controlar o menu lateral
   const [showScenarios, setShowScenarios] = useState(true); // Controlar a lista de cenários
   const [formData, setFormData] = useState({ name: '', description: '', status: 'active' });
-  const [loading, setLoading] = useState(true);
   const [scenarios, setScenarios] = useState([]);
   const [editingId, setEditingId] = useState(null);
 
-  // const toggleForm = () => {
-  //   setShowForm(!showForm); // Alterna entre mostrar e esconder o formulário
-  // };
-
   useEffect(() => {
-    setLoading(true);
+    setShowDrawer(false); // Garante que o menu lateral esteja fechado ao carregar
     fetch('http://localhost:3000/api/scenarios')
       .then((res) => {
         if (!res.ok) {
@@ -24,14 +19,8 @@ function App() {
         }
         return res.json();
       })
-      .then((data) => {
-        setScenarios(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Erro ao buscar cenários:', err);
-        setLoading(false);
-      });
+      .then((data) => setScenarios(data))
+      .catch((err) => console.error('Erro ao buscar cenários:', err));
   }, []);
 
   const handleChange = (e) => {
@@ -51,7 +40,6 @@ function App() {
         const updatedScenario = await response.json();
         setScenarios(scenarios.map((s) => (s.id === editingId ? updatedScenario : s)));
         setEditingId(null);
-        setFormData({ name: '', description: '', status: 'active' });
       } catch (error) {
         console.error('Erro ao editar cenário:', error);
       }
@@ -64,18 +52,19 @@ function App() {
         });
         const newScenario = await response.json();
         setScenarios([...scenarios, newScenario]);
-        setFormData({ name: '', description: '', status: 'active' });
       } catch (error) {
         console.error('Erro ao criar cenário:', error);
       }
     }
+    setFormData({ name: '', description: '', status: 'active' });
+    setShowDrawer(false); // Fecha o menu lateral
   };
 
   const handleEdit = (id) => {
     const scenario = scenarios.find((s) => s.id === id);
     setFormData({ name: scenario.name, description: scenario.description, status: scenario.status });
     setEditingId(id);
-    setShowForm(true); // Mostra o formulário ao editar
+    setShowDrawer(true); // Abre o menu lateral para edição
   };
 
   const handleDelete = async (id) => {
@@ -90,28 +79,33 @@ function App() {
   return (
     <div>
       <h1>JQuality Tool</h1>
-  
-      {/* Botão para alternar o formulário */}
-      <button onClick={() => setShowForm(!showForm)}>
-        {editingId ? 'Edit Scenario' : showForm ? 'Hide Form' : 'Create Scenario'}
-      </button>
-  
-      {/* Formulário condicional */}
-      {showForm && (
+
+      {/* Botões principais */}
+      <div className="main-buttons">
+        <button onClick={() => setShowDrawer(true)}>Create Scenario</button>
+        <button onClick={() => setShowScenarios(!showScenarios)}>
+          {showScenarios ? 'Hide Scenarios' : 'Show Scenarios'}
+        </button>
+      </div>
+
+      {/* Menu lateral */}
+      {showDrawer && <div className="drawer-overlay open" onClick={() => setShowDrawer(false)}></div>}
+      <div className={`drawer ${showDrawer ? 'open' : ''}`}>
+        <div className="drawer-header">
+          <h2>{editingId ? 'Edit Scenario' : 'Create Scenario'}</h2>
+          <button className="drawer-close" onClick={() => setShowDrawer(false)}>
+            &times;
+          </button>
+        </div>
         <ScenarioForm
           formData={formData}
           onChange={handleChange}
           onSubmit={handleSubmit}
           editingId={editingId}
         />
-      )}
-  
-      {/* Botão para alternar a lista de cenários */}
-      <button onClick={() => setShowScenarios(!showScenarios)}>
-        {showScenarios ? 'Hide Scenarios' : 'Show Scenarios'}
-      </button>
-  
-      {/* Lista de cenários condicional */}
+      </div>
+
+      {/* Lista de cenários */}
       {showScenarios && (
         <ScenarioList
           scenarios={scenarios}
