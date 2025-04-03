@@ -9,10 +9,18 @@ function App() {
   const [formData, setFormData] = useState({ name: '', description: '', status: 'active' });
   const [scenarios, setScenarios] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState(''); // Estado para o termo de pesquisa
 
   useEffect(() => {
-    setShowDrawer(false); // Garante que o menu lateral esteja fechado ao carregar
-    fetch('http://localhost:3000/api/scenarios')
+    fetchScenarios();
+  }, [searchTerm]); // Atualiza os cenários sempre que o termo de pesquisa mudar
+
+  const fetchScenarios = () => {
+    const url = searchTerm
+      ? `http://localhost:3000/api/scenarios?search=${encodeURIComponent(searchTerm)}`
+      : 'http://localhost:3000/api/scenarios';
+
+    fetch(url)
       .then((res) => {
         if (!res.ok) {
           throw new Error('Erro ao buscar cenários');
@@ -21,7 +29,11 @@ function App() {
       })
       .then((data) => setScenarios(data))
       .catch((err) => console.error('Erro ao buscar cenários:', err));
-  }, []);
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value); // Atualiza o termo de pesquisa
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -79,6 +91,16 @@ function App() {
   return (
     <div>
       <h1>JQuality Tool</h1>
+
+      {/* Campo de pesquisa */}
+      <div className="search-bar">
+        <input
+          type="text"
+          placeholder="Search scenarios by name or description..."
+          value={searchTerm}
+          onChange={handleSearchChange}
+        />
+      </div>
 
       {/* Botões principais */}
       <div className="main-buttons">

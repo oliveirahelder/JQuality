@@ -36,8 +36,18 @@ app.get('/', (_req, res) => {
 });
 
 // Rota para listar cenários
-app.get('/api/scenarios', (_req, res) => {
-  db.all('SELECT * FROM scenarios', [], (err, rows) => {
+app.get('/api/scenarios', (req, res) => {
+  const { search } = req.query; // Obtém o parâmetro de pesquisa da URL
+  let query = 'SELECT * FROM scenarios';
+  const params = [];
+
+  if (search) {
+    query += ' WHERE name LIKE ? OR description LIKE ?';
+    const searchTerm = `%${search}%`;
+    params.push(searchTerm, searchTerm);
+  }
+
+  db.all(query, params, (err, rows) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {

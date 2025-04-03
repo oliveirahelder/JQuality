@@ -312,3 +312,18 @@ button[type="submit"]:hover {
 .drawer-overlay.open {
   display: block;
 }
+.search-bar {
+  margin: 20px auto;
+  max-width: 600px;
+  display: flex;
+  justify-content: center;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
