@@ -8,10 +8,9 @@ yarn-error.log*
 logs/
 *.log
 *.log.*
-pids/
-*.pid
-*.seed
-*.pid.lock
+*.sqlite-shm
+*.sqlite-wal
+*.db-journal
 
 # Dependency directories
 frontend/node_modules/
@@ -76,13 +75,15 @@ frontend/src/*.test.js
 frontend/src/*.spec.js
 frontend/src/__tests__/
 frontend/src/__mocks__/
-frontend/node_modules
+frontend/node_modules/.cache/
 
 # Ignore specific files in the backend
 backend/src/*.test.js
 backend/src/*.spec.js
 backend/src/__tests__/
 backend/src/__mocks__/
+backend/jquality.db
+backend/node_modules/.cache/
 
 # Ignore compiled TypeScript files
 *.tsbuildinfo
