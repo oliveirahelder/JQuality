@@ -327,3 +327,10 @@ button[type="submit"]:hover {
   border-radius: 6px;
   box-sizing: border-box;
 }
+
+.scenario-list-empty {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 18px;
+  color: #666;
+}

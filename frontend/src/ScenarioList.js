@@ -3,9 +3,9 @@ import React from 'react';
 
 const ScenarioList = ({ scenarios, onEdit, onDelete }) => {
   if (scenarios.length === 0) {
-    return <p>No scenarios found. Try searching for something else.</p>;
+    return <p className="scenario-list-empty">No scenarios found. Try searching for something else.</p>;
   }
-  
+
   return (
     <table className="scenario-table">
       <thead>
