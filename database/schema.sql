@@ -6,6 +6,7 @@ CREATE TABLE scenarios (
   name VARCHAR(255) NOT NULL,
   description TEXT,
   status VARCHAR(50) DEFAULT 'active',
+  tags TEXT, -- Adiciona a coluna para armazenar tags
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

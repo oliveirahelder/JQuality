@@ -24,6 +24,7 @@ db.serialize(() => {
       name TEXT NOT NULL,
       description TEXT,
       status TEXT DEFAULT 'active',
+      tags TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
@@ -37,14 +38,14 @@ app.get('/', (_req, res) => {
 
 // Rota para pesquisar e listar cenários
 app.get('/api/scenarios', (req, res) => {
-  const { search } = req.query; // Obtém o parâmetro de pesquisa da URL
+  const { search } = req.query;
   let query = 'SELECT * FROM scenarios';
   const params = [];
 
   if (search) {
-    query += ' WHERE name LIKE ? OR description LIKE ?';
+    query += ' WHERE name LIKE ? OR description LIKE ? OR tags LIKE ?';
     const searchTerm = `%${search}%`;
-    params.push(searchTerm, searchTerm);
+    params.push(searchTerm, searchTerm, searchTerm); // Inclui tags na pesquisa
   }
 
   db.all(query, params, (err, rows) => {
@@ -73,13 +74,13 @@ app.get('/api/scenarios/:id', (req, res) => {
 
 // Rota para criar um novo cenário
 app.post('/api/scenarios', (req, res) => {
-  const { name, description } = req.body;
-  const query = 'INSERT INTO scenarios (name, description) VALUES (?, ?)';
-  db.run(query, [name, description], function (err) {
+  const { name, description, tags } = req.body; // Adiciona tags
+  const query = 'INSERT INTO scenarios (name, description, tags) VALUES (?, ?, ?)';
+  db.run(query, [name, description, tags], function (err) {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
-      res.status(201).json({ id: this.lastID, name, description, status: 'active' });
+      res.status(201).json({ id: this.lastID, name, description, tags, status: 'active' });
     }
   });
 });
@@ -87,20 +88,19 @@ app.post('/api/scenarios', (req, res) => {
 // Rota para editar um cenário
 app.put('/api/scenarios/:id', (req, res) => {
   const { id } = req.params;
-  const { name, description, status } = req.body;
-  console.log('Dados recebidos para atualização:', { id, name, description, status });
+  const { name, description, status, tags } = req.body; // Adiciona tags
   const query = `
     UPDATE scenarios
-    SET name = ?, description = ?, status = ?, updated_at = CURRENT_TIMESTAMP
+    SET name = ?, description = ?, status = ?, tags = ?, updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
   `;
-  db.run(query, [name, description, status, id], function (err) {
+  db.run(query, [name, description, status, tags, id], function (err) {
     if (err) {
       res.status(500).json({ error: err.message });
     } else if (this.changes === 0) {
       res.status(404).json({ message: 'Scenario not found' });
     } else {
-      res.json({ id, name, description, status });
+      res.json({ id, name, description, status, tags });
     }
   });
 });

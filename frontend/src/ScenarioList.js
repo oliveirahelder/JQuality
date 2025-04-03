@@ -12,6 +12,7 @@ const ScenarioList = ({ scenarios, onEdit, onDelete }) => {
         <tr>
           <th>Name</th>
           <th>Description</th>
+          <th>Tags</th> {/* Adiciona a coluna de tags */}
           <th>Status</th>
           <th>Actions</th>
         </tr>
@@ -21,6 +22,7 @@ const ScenarioList = ({ scenarios, onEdit, onDelete }) => {
           <tr key={scenario.id}>
             <td>{scenario.name}</td>
             <td>{scenario.description}</td>
+            <td>{scenario.tags}</td> {/* Exibe as tags */}
             <td>
               <span
                 className={`status-badge ${

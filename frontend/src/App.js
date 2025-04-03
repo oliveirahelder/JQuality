@@ -6,7 +6,7 @@ import ScenarioForm from './ScenarioForm';
 function App() {
   const [showDrawer, setShowDrawer] = useState(false); // Controlar o menu lateral
   const [showScenarios, setShowScenarios] = useState(true); // Controlar a lista de cenários
-  const [formData, setFormData] = useState({ name: '', description: '', status: 'active' });
+  const [formData, setFormData] = useState({ name: '', description: '', status: 'active', tags: '' });
   const [scenarios, setScenarios] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState(''); // Estado para o termo de pesquisa
@@ -68,13 +68,13 @@ function App() {
         console.error('Erro ao criar cenário:', error);
       }
     }
-    setFormData({ name: '', description: '', status: 'active' });
+    setFormData({ name: '', description: '', status: 'active', tags: '' }); // Limpa o formulário
     setShowDrawer(false); // Fecha o menu lateral
   };
 
   const handleEdit = (id) => {
     const scenario = scenarios.find((s) => s.id === id);
-    setFormData({ name: scenario.name, description: scenario.description, status: scenario.status });
+    setFormData({ name: scenario.name, description: scenario.description, status: scenario.status, tags: scenario.tags });
     setEditingId(id);
     setShowDrawer(true); // Abre o menu lateral para edição
   };
@@ -96,7 +96,7 @@ function App() {
       <div className="search-bar">
         <input
           type="text"
-          placeholder="Search scenarios by name or description..."
+          placeholder="Search scenarios by name, description or tags..."
           value={searchTerm}
           onChange={handleSearchChange}
         />
