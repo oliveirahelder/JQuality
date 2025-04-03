@@ -2,6 +2,10 @@ import React from 'react';
 //import { FaTrash, FaEdit } from 'react-icons/fa'; // Importa os ícones corretamente
 
 const ScenarioList = ({ scenarios, onEdit, onDelete }) => {
+  if (scenarios.length === 0) {
+    return <p>No scenarios found. Try searching for something else.</p>;
+  }
+  
   return (
     <table className="scenario-table">
       <thead>

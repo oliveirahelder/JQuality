@@ -23,12 +23,12 @@ function App() {
     fetch(url)
       .then((res) => {
         if (!res.ok) {
-          throw new Error('Erro ao buscar cenários');
+          throw new Error('Erro ao procurar cenários');
         }
         return res.json();
       })
       .then((data) => setScenarios(data))
-      .catch((err) => console.error('Erro ao buscar cenários:', err));
+      .catch((err) => console.error('Erro ao procurar cenários:', err));
   };
 
   const handleSearchChange = (e) => {

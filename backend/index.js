@@ -35,7 +35,7 @@ app.get('/', (_req, res) => {
   res.send('Welcome to JQuality Backend!!');
 });
 
-// Rota para listar cenários
+// Rota para pesquisar e listar cenários
 app.get('/api/scenarios', (req, res) => {
   const { search } = req.query; // Obtém o parâmetro de pesquisa da URL
   let query = 'SELECT * FROM scenarios';
