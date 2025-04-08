@@ -1,4 +1,4 @@
-const ScenarioList = ({ scenarios, onEdit, onDelete }) => {
+const ScenarioList = ({ scenarios, isSelecting, selectedScenarios, onSelect, onEdit, onDelete }) => {
   if (scenarios.length === 0) {
     return <p className="scenario-list-empty">No scenarios found. Try searching for something else.</p>;
   }
@@ -7,6 +7,7 @@ const ScenarioList = ({ scenarios, onEdit, onDelete }) => {
     <table className="scenario-table">
       <thead>
         <tr>
+          {isSelecting && <th>Select</th>}
           <th>Name</th>
           <th>Description</th>
           <th>Pre-conditions</th>
@@ -21,6 +22,15 @@ const ScenarioList = ({ scenarios, onEdit, onDelete }) => {
       <tbody>
         {scenarios.map((scenario) => (
           <tr key={scenario.id}>
+            {isSelecting && (
+              <td>
+                <input
+                  type="checkbox"
+                  checked={selectedScenarios.includes(scenario.id)}
+                  onChange={() => onSelect(scenario.id)}
+                />
+              </td>
+            )}
             <td>{scenario.name}</td>
             <td>{scenario.description}</td>
             <td>{scenario.pre_conditions}</td>

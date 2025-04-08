@@ -1,58 +1,43 @@
 import React, { useState } from 'react';
 
-const TestBatteryForm = ({ scenarios, onSubmit }) => {
-  const [selectedScenarios, setSelectedScenarios] = useState([]);
+function TestBatteryForm({ scenarios, onSubmit }) {
   const [ticketNumber, setTicketNumber] = useState('');
-  const [name, setName] = useState('');
-
-  const handleScenarioToggle = (id) => {
-    setSelectedScenarios((prev) =>
-      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
-    );
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log({ name, ticket_number: ticketNumber, scenario_ids: selectedScenarios });
-    onSubmit({ name, ticket_number: ticketNumber, scenario_ids: selectedScenarios });
+    if (!ticketNumber || scenarios.length === 0) {
+      alert('Preencha o número do ticket e selecione pelo menos um cenário.');
+      return;
+    }
+  
+    console.log('Enviando dados para criar bateria:', { ticketNumber, scenarioIds: scenarios.map((s) => s.id) }); // Log para depuração
+    onSubmit({ ticketNumber, scenarioIds: scenarios.map((s) => s.id) });
+    setTicketNumber('');
   };
 
   return (
     <form onSubmit={handleSubmit}>
+      <h3>Criar Bateria de Teste</h3>
       <div>
-        <label htmlFor="name">Battery Name:</label>
+        <label>Número do Ticket:</label>
         <input
           type="text"
-          id="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </div>
-      <div>
-        <label htmlFor="ticketNumber">Ticket Number:</label>
-        <input
-          type="text"
-          id="ticketNumber"
           value={ticketNumber}
           onChange={(e) => setTicketNumber(e.target.value)}
+          required
         />
       </div>
       <div>
-        <h3>Select Scenarios:</h3>
-        {scenarios.map((scenario) => (
-          <div key={scenario.id}>
-            <input
-              type="checkbox"
-              checked={selectedScenarios.includes(scenario.id)}
-              onChange={() => handleScenarioToggle(scenario.id)}
-            />
-            {scenario.name}
-          </div>
-        ))}
+        <h4>Selecionados:</h4>
+        <ul>
+          {scenarios.map((scenario) => (
+            <li key={scenario.id}>{scenario.name}</li>
+          ))}
+        </ul>
       </div>
-      <button type="submit">Create Test Battery</button>
+      <button type="submit">Criar Bateria</button>
     </form>
   );
-};
+}
 
 export default TestBatteryForm;

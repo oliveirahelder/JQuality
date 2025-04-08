@@ -334,3 +334,12 @@ button[type="submit"]:hover {
   font-size: 18px;
   color: #666;
 }
+/* Estilo para caixas de seleção */
+.scenario-select {
+  display: flex;
+  align-items: center;
+}
+
+.scenario-select input[type="checkbox"] {
+  margin-right: 10px;
+}

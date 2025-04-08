@@ -35,6 +35,26 @@ db.serialize(() => {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
+  // Criação da tabela de baterias de teste
+  db.run(`
+    CREATE TABLE IF NOT EXISTS test_batteries (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      ticket_number TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Criação da tabela de cenários associados às baterias de teste
+  db.run(`
+    CREATE TABLE IF NOT EXISTS test_battery_scenarios (
+      battery_id INTEGER,
+      scenario_id INTEGER,
+      status TEXT DEFAULT 'ready',
+      FOREIGN KEY (battery_id) REFERENCES test_batteries(id),
+      FOREIGN KEY (scenario_id) REFERENCES scenarios(id)
+    )
+  `);
 });
 
 // ==========================
@@ -79,6 +99,7 @@ app.get('/api/test-batteries', (req, res) => {
 
 app.post('/api/test-batteries', (req, res) => {
   const { name, ticket_number, scenario_ids } = req.body;
+
   db.run(
     'INSERT INTO test_batteries (name, ticket_number) VALUES (?, ?)',
     [name, ticket_number],
@@ -87,9 +108,9 @@ app.post('/api/test-batteries', (req, res) => {
         res.status(500).json({ error: err.message });
       } else {
         const batteryId = this.lastID;
-        const placeholders = scenario_ids.map(() => '(?, ?)').join(',');
-        const query = `INSERT INTO test_battery_scenarios (battery_id, scenario_id) VALUES ${placeholders}`;
-        const params = scenario_ids.flatMap((id) => [batteryId, id]);
+        const placeholders = scenario_ids.map(() => '(?, ?, ?)').join(',');
+        const query = `INSERT INTO test_battery_scenarios (battery_id, scenario_id, status) VALUES ${placeholders}`;
+        const params = scenario_ids.flatMap((id) => [batteryId, id, 'ready']);
         db.run(query, params, (err) => {
           if (err) {
             res.status(500).json({ error: err.message });
@@ -192,6 +213,85 @@ app.delete('/api/scenarios/:id', (req, res) => {
     }
   });
 });
+
+app.post('/api/test-batteries', (req, res) => {
+  console.log('Dados recebidos no backend para criar bateria:', req.body); // Log para depuração
+  const { name, ticket_number, scenario_ids } = req.body;
+
+  if (!name || !ticket_number || !scenario_ids || scenario_ids.length === 0) {
+    console.error('Dados inválidos recebidos:', req.body); // Log de erro
+    return res.status(400).json({ error: 'Dados inválidos. Certifique-se de enviar nome, número do ticket e cenários.' });
+  }
+
+  db.run(
+    'INSERT INTO test_batteries (name, ticket_number) VALUES (?, ?)',
+    [name, ticket_number],
+    function (err) {
+      if (err) {
+        console.error('Erro ao inserir bateria no banco de dados:', err.message); // Log de erro
+        return res.status(500).json({ error: err.message });
+      }
+
+      const batteryId = this.lastID;
+      const placeholders = scenario_ids.map(() => '(?, ?, ?)').join(',');
+      const query = `INSERT INTO test_battery_scenarios (battery_id, scenario_id, status) VALUES ${placeholders}`;
+      const params = scenario_ids.flatMap((id) => [batteryId, id, 'ready']);
+
+      db.run(query, params, (err) => {
+        if (err) {
+          console.error('Erro ao inserir cenários na bateria:', err.message); // Log de erro
+          return res.status(500).json({ error: err.message });
+        }
+
+        console.log('Bateria criada com sucesso:', { id: batteryId, name, ticket_number }); // Log de sucesso
+        res.status(201).json({ id: batteryId, name, ticket_number });
+      });
+    }
+  );
+});
+
+app.get('/api/test-batteries', (req, res) => {
+  const query = `
+    SELECT tb.id AS battery_id, tb.name AS battery_name, tb.ticket_number, tbs.scenario_id, tbs.status, s.name AS scenario_name
+    FROM test_batteries tb
+    LEFT JOIN test_battery_scenarios tbs ON tb.id = tbs.battery_id
+    LEFT JOIN scenarios s ON tbs.scenario_id = s.id
+  `;
+  db.all(query, [], (err, rows) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else {
+      const batteries = rows.reduce((acc, row) => {
+        const battery = acc.find((b) => b.id === row.battery_id);
+        if (battery) {
+          battery.scenarios.push({
+            id: row.scenario_id,
+            name: row.scenario_name,
+            status: row.status,
+          });
+        } else {
+          acc.push({
+            id: row.battery_id,
+            name: row.battery_name,
+            ticket_number: row.ticket_number,
+            scenarios: row.scenario_id
+              ? [
+                  {
+                    id: row.scenario_id,
+                    name: row.scenario_name,
+                    status: row.status,
+                  },
+                ]
+              : [],
+          });
+        }
+        return acc;
+      }, []);
+      res.json(batteries);
+    }
+  });
+});
+
 
 // ==========================
 // Inicialização do Servidor

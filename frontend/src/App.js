@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import ScenarioList from './ScenarioList';
 import ScenarioForm from './ScenarioForm';
 import TestBatteryForm from './TestBatteryForm'; // Importando o componente de bateria de teste
+import TestBattery from './TestBattery';
 
 function App() {
   // Estados
@@ -22,6 +23,22 @@ function App() {
   const [editingId, setEditingId] = useState(null); // ID do cenário em edição
   const [searchTerm, setSearchTerm] = useState(''); // Estado para o termo de pesquisa
   //const [testBatteries, setTestBatteries] = useState([]); // Estado para armazenar as baterias de teste
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [selectedScenarios, setSelectedScenarios] = useState([]);
+  const [pendingBatteries, setPendingBatteries] = useState([]); // Baterias pendentes
+  const [completedBatteries, setCompletedBatteries] = useState([]); // Baterias concluídas
+
+  const toggleSelectionMode = () => {
+    setIsSelecting(!isSelecting);
+    setSelectedScenarios([]);
+  };
+
+  const handleScenarioSelect = (id) => {
+    setSelectedScenarios((prev) =>
+      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
+    );
+    console.log('Cenários selecionados:', selectedScenarios); // Log para depuração
+  };
 
   // Função para buscar cenários com base no termo de pesquisa
   const fetchScenarios = async () => {
@@ -49,7 +66,18 @@ function App() {
         throw new Error('Erro ao buscar baterias de teste');
       }
       const data = await response.json();
-      setTestBatteries(data); // Atualiza o estado com as baterias de teste
+      console.log('Baterias de teste recebidas:', data); // Log para depuração
+  
+      // Separar baterias pendentes e concluídas
+      const pending = data.filter((battery) =>
+        battery.scenarios.some((scenario) => scenario.status !== 'pass')
+      );
+      const completed = data.filter((battery) =>
+        battery.scenarios.every((scenario) => scenario.status === 'pass')
+      );
+  
+      setPendingBatteries(pending);
+      setCompletedBatteries(completed);
     } catch (error) {
       console.error('Erro ao buscar baterias de teste:', error);
     }
@@ -143,6 +171,35 @@ function App() {
     }
   };
 
+  // Criar uma bateria de teste
+  const handleCreateTestBattery = async ({ ticketNumber, scenarioIds }) => {
+    console.log('Criando bateria de teste com os dados:', { ticketNumber, scenarioIds }); // Log para depuração
+  
+    try {
+      const response = await fetch('http://localhost:3000/api/test-batteries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: `Bateria - ${ticketNumber}`,
+          ticket_number: ticketNumber,
+          scenario_ids: scenarioIds,
+        }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Erro ao criar bateria de teste:', errorData); // Log detalhado do erro
+        throw new Error('Erro ao criar bateria de teste');
+      }
+  
+      const newBattery = await response.json();
+      console.log('Bateria criada com sucesso:', newBattery); // Log de sucesso
+      fetchTestBatteries(); // Atualiza as baterias após criar
+    } catch (error) {
+      console.error('Erro ao criar bateria de teste:', error); // Log de erros
+    }
+  };
+
   return (
     <div>
       <h1>JQuality Tool</h1>
@@ -163,7 +220,10 @@ function App() {
         <button onClick={() => setShowScenarios(!showScenarios)}>
           {showScenarios ? 'Hide Scenarios' : 'Show Scenarios'}
         </button>
-      </div>
+        <button onClick={toggleSelectionMode}>
+          {isSelecting ? 'Cancel Selection' : 'Select Scenarios'}
+        </button>
+      </div>  
 
       {/* Menu lateral */}
       {showDrawer && <div className="drawer-overlay open" onClick={() => setShowDrawer(false)}></div>}
@@ -186,13 +246,36 @@ function App() {
       {showScenarios && (
         <ScenarioList
           scenarios={scenarios}
+          isSelecting={isSelecting}
+          selectedScenarios={selectedScenarios}
+          onSelect={handleScenarioSelect}
           onEdit={handleEdit}
           onDelete={handleDelete}
         />
       )}
 
-      {/* Formulário para criar baterias de teste
-      <TestBatteryForm scenarios={scenarios} onSubmit={handleCreateTestBattery} /> */}
+      {/*Formulário para criar baterias de teste*/}
+      {isSelecting && (
+        <TestBatteryForm
+          scenarios={scenarios.filter((s) => selectedScenarios.includes(s.id))}
+          onSubmit={handleCreateTestBattery}
+        />
+      )}
+
+      {/* Lista de baterias de teste */} 
+      <div>
+        <h2>Pending Test Batteries</h2>
+        {pendingBatteries.map((battery) => (
+          <TestBattery key={battery.id} battery={battery} />
+        ))}
+
+        <h2>Completed Test Batteries</h2>
+        {completedBatteries.map((battery) => (
+          <TestBattery key={battery.id} battery={battery} />
+        ))}
+      </div>
+
+      
     </div>
   );
 }
