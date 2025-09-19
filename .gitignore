@@ -89,3 +89,7 @@ backend/node_modules/.cache/
 *.tsbuildinfo
 frontend/**/*.js.map
 backend/**/*.js.map
+
+# ESLint cache
+.eslintcache
+node_modules/.cache/
