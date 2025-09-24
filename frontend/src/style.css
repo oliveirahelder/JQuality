@@ -192,7 +192,7 @@ li strong {
 /* Formulário */
 form {
   background: #fff;
-  margin: 20px auto;
+  margin: 20px ;
   padding: 25px;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -263,8 +263,8 @@ button[type="submit"]:hover {
 .drawer {
   position: fixed;
   top: 0;
-  right: -300px; /* Escondido fora da tela inicialmente */
-  width: 300px;
+  right: -800px; /* Escondido fora da tela inicialmente */
+  width: 700px;
   height: 100%;
   background-color: #fff;
   box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);

@@ -7,6 +7,26 @@ import TestBattery from './TestBattery';
 
 function App() {
   // Estados
+  const [showIAForm, setShowIAForm] = useState(false); // Controlar o formulário de IA
+  const [iaXml, setIaXml] = useState('');
+  const [iaScenarios, setIaScenarios] = useState('');
+  const [iaLoading, setIaLoading] = useState(false);
+
+  const handleGenerateIAScenarios = async () => {
+    setIaLoading(true);
+    try {
+      const response = await fetch('http://localhost:3000/api/generate-ia-scenarios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ xml: iaXml }),
+      });
+      const data = await response.json();
+      setIaScenarios(data.scenarios || 'Erro ao gerar cenários.');
+    } catch (error) {
+      setIaScenarios('Erro ao comunicar com IA.');
+    }
+    setIaLoading(false);
+  };
   const [showDrawer, setShowDrawer] = useState(false); // Controlar o menu lateral
   const [showScenarios, setShowScenarios] = useState(true); // Controlar a lista de cenários
   const [formData, setFormData] = useState({
@@ -160,7 +180,7 @@ function App() {
     setEditingId(id);
     setShowDrawer(true); // Abre o menu lateral para edição
   };
-
+  
   // Excluir um cenário
   const handleDelete = async (id) => {
     try {
@@ -217,13 +237,49 @@ function App() {
       {/* Botões principais */}
       <div className="main-buttons">
         <button onClick={() => setShowDrawer(true)}>Create Manual Scenario</button>
+        <button onClick={() => setShowIAForm(true)}>
+          Create IA Scenarios
+        </button>
         <button onClick={() => setShowScenarios(!showScenarios)}>
           {showScenarios ? 'Hide Scenarios' : 'Show Scenarios'}
         </button>
         <button onClick={toggleSelectionMode}>
           {isSelecting ? 'Cancel Selection' : 'Select Scenarios'}
         </button>
-      </div>  
+      {/* Formulário IA */}          
+      </div> 
+      {showIAForm && <div className="drawer-overlay open" onClick={() => setShowIAForm(false)}></div>}
+      <div className={`drawer ${showIAForm ? 'open' : ''}`}>
+        <div className="drawer-header">
+          <h2>IA Scenarios</h2>
+          <button className="drawer-close" onClick={() => setShowIAForm(false)}>
+            &times;
+          </button>
+        </div>
+        <div>
+          <textarea
+            placeholder="Cole aqui o XML do ticket"
+            value={iaXml}
+            onChange={e => setIaXml(e.target.value)}
+            rows={8}
+            style={{ width: '100%' }}
+          />
+          <button onClick={handleGenerateIAScenarios} disabled={iaLoading}>
+            {iaLoading ? 'A gerar...' : 'Gerar Cenários com IA'}
+          </button>
+          {iaScenarios && (
+            <div>
+              <h3>Cenários Gerados:</h3>
+              <textarea
+                value={iaScenarios}
+                readOnly
+                rows={10}
+                style={{ width: '100%' }}
+              />
+            </div>
+          )}
+        </div>
+      </div> 
 
       {/* Menu lateral */}
       {showDrawer && <div className="drawer-overlay open" onClick={() => setShowDrawer(false)}></div>}
