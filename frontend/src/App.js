@@ -216,7 +216,7 @@ function App() {
 
       {/* Botões principais */}
       <div className="main-buttons">
-        <button onClick={() => setShowDrawer(true)}>Create Scenario</button>
+        <button onClick={() => setShowDrawer(true)}>Create Manual Scenario</button>
         <button onClick={() => setShowScenarios(!showScenarios)}>
           {showScenarios ? 'Hide Scenarios' : 'Show Scenarios'}
         </button>
