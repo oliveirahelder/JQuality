@@ -93,3 +93,4 @@ backend/**/*.js.map
 # ESLint cache
 .eslintcache
 node_modules/.cache/
+backend/jquality.db
