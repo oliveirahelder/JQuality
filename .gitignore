@@ -90,7 +90,11 @@ backend/node_modules/.cache/
 frontend/**/*.js.map
 backend/**/*.js.map
 
+<<<<<<< HEAD
 # ESLint cache
 .eslintcache
 node_modules/.cache/
 backend/jquality.db
+=======
+.env
+>>>>>>> development

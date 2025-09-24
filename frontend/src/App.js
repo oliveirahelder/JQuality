@@ -2,71 +2,186 @@ import './style.css';
 import React, { useState, useEffect } from 'react';
 import ScenarioList from './ScenarioList';
 import ScenarioForm from './ScenarioForm';
+import TestBatteryForm from './TestBatteryForm'; // Importando o componente de bateria de teste
+import TestBattery from './TestBattery';
 
 function App() {
+  // Estados
+  const [showIAForm, setShowIAForm] = useState(false); // Controlar o formulário de IA
+  const [iaXml, setIaXml] = useState('');
+  const [iaScenarios, setIaScenarios] = useState('');
+  const [iaLoading, setIaLoading] = useState(false);
+
+  const handleGenerateIAScenarios = async () => {
+    setIaLoading(true);
+    try {
+      const response = await fetch('http://localhost:3000/api/generate-ia-scenarios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ xml: iaXml }),
+      });
+      const data = await response.json();
+      setIaScenarios(data.scenarios || 'Erro ao gerar cenários.');
+    } catch (error) {
+      setIaScenarios('Erro ao comunicar com IA.');
+    }
+    setIaLoading(false);
+  };
   const [showDrawer, setShowDrawer] = useState(false); // Controlar o menu lateral
   const [showScenarios, setShowScenarios] = useState(true); // Controlar a lista de cenários
-  const [formData, setFormData] = useState({ name: '', description: '', status: 'active' });
-  const [scenarios, setScenarios] = useState([]);
-  const [editingId, setEditingId] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    pre_conditions: '',
+    steps: '',
+    expected_results: '',
+    priority: 'medium',
+    status: 'active',
+    tags: ''
+  }); // Estado para os dados do formulário
+  const [scenarios, setScenarios] = useState([]); // Lista de cenários
+  const [editingId, setEditingId] = useState(null); // ID do cenário em edição
+  const [searchTerm, setSearchTerm] = useState(''); // Estado para o termo de pesquisa
+  //const [testBatteries, setTestBatteries] = useState([]); // Estado para armazenar as baterias de teste
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [selectedScenarios, setSelectedScenarios] = useState([]);
+  const [pendingBatteries, setPendingBatteries] = useState([]); // Baterias pendentes
+  const [completedBatteries, setCompletedBatteries] = useState([]); // Baterias concluídas
 
+  const toggleSelectionMode = () => {
+    setIsSelecting(!isSelecting);
+    setSelectedScenarios([]);
+  };
+
+  const handleScenarioSelect = (id) => {
+    setSelectedScenarios((prev) =>
+      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
+    );
+    console.log('Cenários selecionados:', selectedScenarios); // Log para depuração
+  };
+
+  // Função para buscar cenários com base no termo de pesquisa
+  const fetchScenarios = async () => {
+    const url = searchTerm
+      ? `http://localhost:3000/api/scenarios?search=${encodeURIComponent(searchTerm)}`
+      : 'http://localhost:3000/api/scenarios';
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Erro ao procurar cenários');
+      }
+      const data = await response.json();
+      setScenarios(data); // Atualiza o estado com os cenários encontrados
+    } catch (error) {
+      console.error('Erro ao procurar cenários:', error);
+    }
+  };
+
+  // Função para buscar baterias de teste
+  const fetchTestBatteries = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/test-batteries');
+      if (!response.ok) {
+        throw new Error('Erro ao buscar baterias de teste');
+      }
+      const data = await response.json();
+      console.log('Baterias de teste recebidas:', data); // Log para depuração
+  
+      // Separar baterias pendentes e concluídas
+      const pending = data.filter((battery) =>
+        battery.scenarios.some((scenario) => scenario.status !== 'pass')
+      );
+      const completed = data.filter((battery) =>
+        battery.scenarios.every((scenario) => scenario.status === 'pass')
+      );
+  
+      setPendingBatteries(pending);
+      setCompletedBatteries(completed);
+    } catch (error) {
+      console.error('Erro ao buscar baterias de teste:', error);
+    }
+  };
+
+  // useEffect para buscar cenários e baterias ao carregar o componente
   useEffect(() => {
-    setShowDrawer(false); // Garante que o menu lateral esteja fechado ao carregar
-    fetch('http://localhost:3000/api/scenarios')
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error('Erro ao buscar cenários');
-        }
-        return res.json();
-      })
-      .then((data) => setScenarios(data))
-      .catch((err) => console.error('Erro ao buscar cenários:', err));
-  }, []);
+    fetchScenarios();
+    fetchTestBatteries();
+  }, [searchTerm]); // Atualiza os cenários sempre que o termo de pesquisa mudar
 
+  // Atualizar o termo de pesquisa
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value); // Atualiza o termo de pesquisa
+  };
+
+  // Atualizar os dados do formulário
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Submeter o formulário para criar ou editar cenários
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editingId) {
-      try {
-        const response = await fetch(`http://localhost:3000/api/scenarios/${editingId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
-        });
-        const updatedScenario = await response.json();
-        setScenarios(scenarios.map((s) => (s.id === editingId ? updatedScenario : s)));
-        setEditingId(null);
-      } catch (error) {
-        console.error('Erro ao editar cenário:', error);
+    console.log('Dados enviados para o backend:', formData); // Log dos dados do formulário
+    const url = editingId
+      ? `http://localhost:3000/api/scenarios/${editingId}`
+      : 'http://localhost:3000/api/scenarios';
+    const method = editingId ? 'PUT' : 'POST';
+  
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const data = await response.json();
+      console.log('Resposta do backend:', data); // Log da resposta do backend
+      if (editingId) {
+        setScenarios(scenarios.map((s) => (s.id === editingId ? data : s)));
+      } else {
+        setScenarios([...scenarios, data]);
       }
-    } else {
-      try {
-        const response = await fetch('http://localhost:3000/api/scenarios', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
-        });
-        const newScenario = await response.json();
-        setScenarios([...scenarios, newScenario]);
-      } catch (error) {
-        console.error('Erro ao criar cenário:', error);
-      }
+      setFormData({
+        name: '',
+        description: '',
+        pre_conditions: '',
+        steps: '',
+        expected_results: '',
+        priority: 'medium',
+        status: 'active',
+        tags: ''
+      });
+      setEditingId(null);
+      setShowDrawer(false);
+    } catch (error) {
+      console.error('Erro ao salvar cenário:', error); // Log de erros
     }
-    setFormData({ name: '', description: '', status: 'active' });
-    setShowDrawer(false); // Fecha o menu lateral
   };
 
+  // Editar um cenário existente
   const handleEdit = (id) => {
     const scenario = scenarios.find((s) => s.id === id);
-    setFormData({ name: scenario.name, description: scenario.description, status: scenario.status });
+    if (!scenario) {
+      console.error(`Scenario with ID ${id} not found.`);
+      return;
+    }
+  
+    setFormData({
+      name: scenario.name || '',
+      description: scenario.description || '',
+      pre_conditions: scenario.pre_conditions || '',
+      steps: scenario.steps || '',
+      expected_results: scenario.expected_results || '',
+      priority: scenario.priority || 'medium',
+      status: scenario.status || 'active',
+      tags: scenario.tags || ''
+    }); // Preenche o formulário com os dados do cenário
     setEditingId(id);
     setShowDrawer(true); // Abre o menu lateral para edição
   };
-
+  
+  // Excluir um cenário
   const handleDelete = async (id) => {
     try {
       await fetch(`http://localhost:3000/api/scenarios/${id}`, { method: 'DELETE' });
@@ -76,17 +191,95 @@ function App() {
     }
   };
 
+  // Criar uma bateria de teste
+  const handleCreateTestBattery = async ({ ticketNumber, scenarioIds }) => {
+    console.log('Criando bateria de teste com os dados:', { ticketNumber, scenarioIds }); // Log para depuração
+  
+    try {
+      const response = await fetch('http://localhost:3000/api/test-batteries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: `Bateria - ${ticketNumber}`,
+          ticket_number: ticketNumber,
+          scenario_ids: scenarioIds,
+        }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Erro ao criar bateria de teste:', errorData); // Log detalhado do erro
+        throw new Error('Erro ao criar bateria de teste');
+      }
+  
+      const newBattery = await response.json();
+      console.log('Bateria criada com sucesso:', newBattery); // Log de sucesso
+      fetchTestBatteries(); // Atualiza as baterias após criar
+    } catch (error) {
+      console.error('Erro ao criar bateria de teste:', error); // Log de erros
+    }
+  };
+
   return (
     <div>
       <h1>JQuality Tool</h1>
 
+      {/* Campo de pesquisa */}
+      <div className="search-bar">
+        <input
+          type="text"
+          placeholder="Search scenarios by name, description or tags..."
+          value={searchTerm}
+          onChange={handleSearchChange}
+        />
+      </div>
+
       {/* Botões principais */}
       <div className="main-buttons">
-        <button onClick={() => setShowDrawer(true)}>Create Scenario</button>
+        <button onClick={() => setShowDrawer(true)}>Create Manual Scenario</button>
+        <button onClick={() => setShowIAForm(true)}>
+          Create IA Scenarios
+        </button>
         <button onClick={() => setShowScenarios(!showScenarios)}>
           {showScenarios ? 'Hide Scenarios' : 'Show Scenarios'}
         </button>
-      </div>
+        <button onClick={toggleSelectionMode}>
+          {isSelecting ? 'Cancel Selection' : 'Select Scenarios'}
+        </button>
+      {/* Formulário IA */}          
+      </div> 
+      {showIAForm && <div className="drawer-overlay open" onClick={() => setShowIAForm(false)}></div>}
+      <div className={`drawer ${showIAForm ? 'open' : ''}`}>
+        <div className="drawer-header">
+          <h2>IA Scenarios</h2>
+          <button className="drawer-close" onClick={() => setShowIAForm(false)}>
+            &times;
+          </button>
+        </div>
+        <div>
+          <textarea
+            placeholder="Cole aqui o XML do ticket"
+            value={iaXml}
+            onChange={e => setIaXml(e.target.value)}
+            rows={8}
+            style={{ width: '100%' }}
+          />
+          <button onClick={handleGenerateIAScenarios} disabled={iaLoading}>
+            {iaLoading ? 'A gerar...' : 'Gerar Cenários com IA'}
+          </button>
+          {iaScenarios && (
+            <div>
+              <h3>Cenários Gerados:</h3>
+              <textarea
+                value={iaScenarios}
+                readOnly
+                rows={10}
+                style={{ width: '100%' }}
+              />
+            </div>
+          )}
+        </div>
+      </div> 
 
       {/* Menu lateral */}
       {showDrawer && <div className="drawer-overlay open" onClick={() => setShowDrawer(false)}></div>}
@@ -109,10 +302,36 @@ function App() {
       {showScenarios && (
         <ScenarioList
           scenarios={scenarios}
+          isSelecting={isSelecting}
+          selectedScenarios={selectedScenarios}
+          onSelect={handleScenarioSelect}
           onEdit={handleEdit}
           onDelete={handleDelete}
         />
       )}
+
+      {/*Formulário para criar baterias de teste*/}
+      {isSelecting && (
+        <TestBatteryForm
+          scenarios={scenarios.filter((s) => selectedScenarios.includes(s.id))}
+          onSubmit={handleCreateTestBattery}
+        />
+      )}
+
+      {/* Lista de baterias de teste */} 
+      <div>
+        <h2>Pending Test Batteries</h2>
+        {pendingBatteries.map((battery) => (
+          <TestBattery key={battery.id} battery={battery} />
+        ))}
+
+        <h2>Completed Test Batteries</h2>
+        {completedBatteries.map((battery) => (
+          <TestBattery key={battery.id} battery={battery} />
+        ))}
+      </div>
+
+      
     </div>
   );
 }
