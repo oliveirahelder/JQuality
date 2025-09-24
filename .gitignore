@@ -89,3 +89,5 @@ backend/node_modules/.cache/
 *.tsbuildinfo
 frontend/**/*.js.map
 backend/**/*.js.map
+
+.env

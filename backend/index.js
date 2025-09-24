@@ -5,6 +5,9 @@ const cors = require('cors');
 const app = express();
 const port = 3000;
 
+const axios = require('axios');
+require('dotenv').config();
+
 // ==========================
 // Middlewares
 // ==========================
@@ -292,6 +295,30 @@ app.get('/api/test-batteries', (req, res) => {
   });
 });
 
+app.post('/api/generate-ia-scenarios', async (req, res) => {
+  const { xml } = req.body;
+  if (!xml) {
+    return res.status(400).json({ scenarios: 'XML não enviado.' });
+  }
+
+  try {
+    const prompt = `Gere cenários de teste funcionais em Gherkin para este XML:\n\n${xml}`;
+    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 700,
+      temperature: 0.5
+    }, {
+      headers: {
+        Authorization: `Bearer ${process.env.IA_TOKEN}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    res.json({ scenarios: response.data.choices[0].message.content });
+  } catch (error) {
+    res.status(500).json({ scenarios: 'Erro ao comunicar com a IA.' });
+  }
+});
 
 // ==========================
 // Inicialização do Servidor
