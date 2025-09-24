@@ -29,13 +29,17 @@ const db = new sqlite3.Database('./jquality.db', (err) => {
 db.serialize(() => {
   db.run(`
     CREATE TABLE IF NOT EXISTS scenarios (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      description TEXT,
-      status TEXT DEFAULT 'active',
-      tags TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT,
+    pre_conditions TEXT,
+    steps TEXT,
+    expected_results TEXT,
+    priority TEXT,
+    status TEXT DEFAULT 'active',
+    tags TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
   // Criação da tabela de baterias de teste
@@ -302,7 +306,17 @@ app.post('/api/generate-ia-scenarios', async (req, res) => {
   }
 
   try {
-    const prompt = `Gere cenários de teste funcionais em Gherkin para este XML:\n\n${xml}`;
+    const prompt = `Tens o seguinte ficheiro XML extraído de um ticket do Jira, contendo título, descrição, comentários e outros campos relevantes.
+
+- Foca-te apenas no que foi pedido no ticket.
+- Usa toda a informação útil do ticket, como descrição e comentários, requisitos funcionais, etc.
+- Gera cenários de teste funcionais e claros, em inglês, utilizando Gherkin (Given/When/Then).
+- Ignora detalhes técnicos ou campos do XML que não ajudem à criação dos testes.
+
+Segue o modelo e gera os cenários necessários para validar o ticket:
+
+${xml}
+`;
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: 'gpt-4',
       messages: [{ role: 'user', content: prompt }],
