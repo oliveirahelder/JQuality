@@ -263,8 +263,8 @@ button[type="submit"]:hover {
 .drawer {
   position: fixed;
   top: 0;
-  right: -800px; /* Escondido fora da tela inicialmente */
-  width: 700px;
+  right: -3800px; /* Escondido fora da tela inicialmente */
+  width: 1700px;
   height: 100%;
   background-color: #fff;
   box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
@@ -274,6 +274,7 @@ button[type="submit"]:hover {
   display: flex;
   flex-direction: column;
   gap: 15px;
+  overflow-y: auto;
 }
 
 .drawer.open {

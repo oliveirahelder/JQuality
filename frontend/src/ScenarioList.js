@@ -1,4 +1,4 @@
-const ScenarioList = ({ scenarios, isSelecting, selectedScenarios, onSelect, onEdit, onDelete }) => {
+const ScenarioList = ({ scenarios, isSelecting, selectedScenarios, onSelect, onEdit, onDelete, preview }) => {
   if (scenarios.length === 0) {
     return <p className="scenario-list-empty">No scenarios found. Try searching for something else.</p>;
   }
@@ -7,7 +7,7 @@ const ScenarioList = ({ scenarios, isSelecting, selectedScenarios, onSelect, onE
     <table className="scenario-table">
       <thead>
         <tr>
-          {isSelecting && <th>Select</th>}
+          {(isSelecting || preview) && <th>Select</th>}
           <th>Name</th>
           <th>Description</th>
           <th>Pre-conditions</th>
@@ -16,18 +16,18 @@ const ScenarioList = ({ scenarios, isSelecting, selectedScenarios, onSelect, onE
           <th>Priority</th>
           <th>Tags</th>
           <th>Status</th>
-          <th>Actions</th>
+          {!preview && <th>Actions</th>}
         </tr>
       </thead>
       <tbody>
-        {scenarios.map((scenario) => (
-          <tr key={scenario.id}>
-            {isSelecting && (
+        {scenarios.map((scenario, idx) => (
+          <tr key={scenario.id ?? scenario.tmp_id ?? idx}>
+            {(isSelecting || preview) && (
               <td>
                 <input
                   type="checkbox"
-                  checked={selectedScenarios.includes(scenario.id)}
-                  onChange={() => onSelect(scenario.id)}
+                  checked={selectedScenarios.includes(scenario.id ?? scenario.tmp_id ?? idx)}
+                  onChange={() => onSelect(scenario.id ?? scenario.tmp_id ?? idx)}
                 />
               </td>
             )}
@@ -47,16 +47,18 @@ const ScenarioList = ({ scenarios, isSelecting, selectedScenarios, onSelect, onE
                 {scenario.status}
               </span>
             </td>
-            <td>
-              <div className="scenario-actions">
-                <button className="edit" onClick={() => onEdit(scenario.id)}>
-                  Edit
-                </button>
-                <button className="delete" onClick={() => onDelete(scenario.id)}>
-                  Delete
-                </button>
-              </div>
-            </td>
+            {!preview && (
+              <td>
+                <div className="scenario-actions">
+                  <button className="edit" onClick={() => onEdit(scenario.id)}>
+                    Edit
+                  </button>
+                  <button className="delete" onClick={() => onDelete(scenario.id)}>
+                    Delete
+                  </button>
+                </div>
+              </td>
+            )}
           </tr>
         ))}
       </tbody>

@@ -300,27 +300,45 @@ app.get('/api/test-batteries', (req, res) => {
 });
 
 app.post('/api/generate-ia-scenarios', async (req, res) => {
-  const { xml } = req.body;
-  if (!xml) {
-    return res.status(400).json({ scenarios: 'XML não enviado.' });
+  const { xml, format } = req.body;
+  if (!xml) return res.status(400).json({ scenarios: 'XML não enviado.' });
+
+  let prompt = '';
+  if (format === 'gherkin') {
+    prompt = `
+Tens o seguinte ficheiro XML extraído de um ticket do Jira.
+Gera todos os cenários de teste funcionais em formato Gherkin (Given-When-Then), claros e completos, usando apenas informação relevante (descrição, comentários, requisitos).
+Ignora campos técnicos do XML que não descrevam comportamento funcional do pedido em inglês.
+O XML é:
+${xml}
+`;
+  } else {
+    prompt = `
+Tens o seguinte ficheiro XML extraído de um ticket do Jira.
+
+A tua tarefa:
+1. Extrai toda a informação relevante da descrição, comentários e épico (caso exista).
+2. Decompõe o pedido funcional em TODOS os cenários de teste MANUAIS que garantam a cobertura funcional do que foi pedido para ser desenvolvido e assim o QA poder testar.
+3. Inclui casos para cada funcionalidade do pedido escrito na descrição, comentários e épico (se existir). Cada cenário deve ser claro, completo e autónomo.
+4. Apresenta a resposta como um array JSON (não string!) onde cada cenário é UM objeto com os seguintes campos: name, description, pre_conditions, steps, expected_results, tags, priority, status em ingles.
+
+Exemplo de resposta:
+[
+ ...
+]
+Não agrupes tudo num só cenário! Identifica explicitamente cada funcionalidade do pedido e transforma-a num cenário distinto para QA.
+
+ATENÇÃO: Responde APENAS com o array JSON SEM texto antes ou depois. NÃO uses markdown com \`\`\`, nem explica, nem inclui comentários!
+O XML do ticket é:
+${xml}
+`;
   }
 
   try {
-    const prompt = `Tens o seguinte ficheiro XML extraído de um ticket do Jira, contendo título, descrição, comentários e outros campos relevantes.
-
-- Foca-te apenas no que foi pedido no ticket.
-- Usa toda a informação útil do ticket, como descrição e comentários, requisitos funcionais, etc.
-- Gera cenários de teste funcionais e claros, em inglês, utilizando Gherkin (Given/When/Then).
-- Ignora detalhes técnicos ou campos do XML que não ajudem à criação dos testes.
-
-Segue o modelo e gera os cenários necessários para validar o ticket:
-
-${xml}
-`;
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-      model: 'gpt-4',
+      model: 'gpt-4.1',
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 700,
+      max_tokens: 2000,
       temperature: 0.5
     }, {
       headers: {

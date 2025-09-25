@@ -18,10 +18,11 @@ function App() {
       const response = await fetch('http://localhost:3000/api/generate-ia-scenarios', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ xml: iaXml }),
+        body: JSON.stringify({ xml: iaXml, format: iaFormat }),
       });
       const data = await response.json();
       setIaScenarios(data.scenarios || 'Erro ao gerar cenários.');
+      console.log("RESPOSTA DA IA RAW >>>", data.scenarios);
     } catch (error) {
       setIaScenarios('Erro ao comunicar com IA.');
     }
@@ -47,6 +48,16 @@ function App() {
   const [selectedScenarios, setSelectedScenarios] = useState([]);
   const [pendingBatteries, setPendingBatteries] = useState([]); // Baterias pendentes
   const [completedBatteries, setCompletedBatteries] = useState([]); // Baterias concluídas
+  const [selectedPreviewScenarios, setSelectedPreviewScenarios] = useState([]);
+
+  // Função de seleção
+  const handleSelectPreviewScenario = (idx) => {
+    setSelectedPreviewScenarios((prev) =>
+      prev.includes(idx)
+        ? prev.filter(i => i !== idx)
+        : [...prev, idx]
+    );
+  };
 
   const toggleSelectionMode = () => {
     setIsSelecting(!isSelecting);
@@ -246,8 +257,9 @@ function App() {
         <button onClick={toggleSelectionMode}>
           {isSelecting ? 'Cancel Selection' : 'Select Scenarios'}
         </button>
-        {/* Formulário IA */}
       </div>
+
+      {/* ----------- Drawer IA Scenarios  ----------- */}
       {showIAForm && <div className="drawer-overlay open" onClick={() => setShowIAForm(false)}></div>}
       <div className={`drawer ${showIAForm ? 'open' : ''}`}>
         <div className="drawer-header">
@@ -275,9 +287,11 @@ function App() {
           <button onClick={handleGenerateIAScenarios} disabled={iaLoading}>
             {iaLoading ? 'A gerar...' : 'Gerar Cenários com IA'}
           </button>
-          {iaScenarios && (
+
+          {/* --- PREVIEW GHERKIN OU MANUAL --- */}
+          {iaFormat === "gherkin" && iaScenarios && (
             <div>
-              <h3>Cenários Gerados:</h3>
+              <h3>Cenários Gerados (Gherkin):</h3>
               <textarea
                 value={iaScenarios}
                 readOnly
@@ -286,6 +300,89 @@ function App() {
               />
             </div>
           )}
+
+          {iaFormat === "manual" && iaScenarios && (() => {
+            let raw = typeof iaScenarios === "string" ? iaScenarios.trim() : "";
+            if (raw.startsWith("```json")) raw = raw.slice(7);
+            if (raw.startsWith("```")) raw = raw.slice(3);
+            raw = raw.replace(/```$/, '').trim();
+
+            // Extrai só o bloco entre "[" e o último "]"
+            let startIdx = raw.indexOf('[');
+            let endIdx = raw.lastIndexOf(']');
+            let relevant = (startIdx !== -1 && endIdx !== -1) ? raw.slice(startIdx, endIdx + 1) : '';
+
+            let scenariosArr = [];
+            let parseError = false;
+            try {
+              let toParse = relevant || raw;
+              scenariosArr = Array.isArray(iaScenarios) ? iaScenarios : JSON.parse(toParse);
+              if (!Array.isArray(scenariosArr)) throw new Error();
+            } catch (e) {
+              parseError = true;
+              scenariosArr = [];
+            }
+
+            const scenariosArrWithTmpIds = scenariosArr.map((s, idx) => ({ ...s, tmp_id: idx }));
+
+            return (
+              <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
+                <h3>Scenarios IA Generated:</h3>
+                <button
+                  style={{ width: '100%', margin: '12px 0' }}
+                  disabled={selectedPreviewScenarios.length === 0}
+                  onClick={async () => {
+                    for (const tmp_id of selectedPreviewScenarios) {
+                      const scenario = scenariosArrWithTmpIds.find(s => s.tmp_id === tmp_id);
+                      await fetch('http://localhost:3000/api/scenarios', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(scenario)
+                      });
+                    }
+                    setSelectedPreviewScenarios([]);
+                    setIaScenarios('');
+                    setShowIAForm(false);
+                    fetchScenarios();
+                  }}
+                >
+                  Guardar Cenários Selecionados
+                </button>
+
+                {(scenariosArrWithTmpIds.length > 0) ? (
+                  <ScenarioList
+                    scenarios={scenariosArrWithTmpIds}
+                    isSelecting={false}
+                    preview={true}
+                    selectedScenarios={selectedPreviewScenarios}
+                    onSelect={(tmp_id) =>
+                      setSelectedPreviewScenarios((prev) =>
+                        prev.includes(tmp_id)
+                          ? prev.filter(x => x !== tmp_id)
+                          : [...prev, tmp_id]
+                      )
+                    }
+                    onEdit={() => { }}
+                    onDelete={() => { }}
+                  />
+                ) : (
+                  <div style={{ margin: "16px 0" }}>
+                    <p style={{ color: "red" }}>
+                      {parseError
+                        ? "Pré-visualização Inválida — Tem a certeza que a resposta da IA é JSON válido e contém cenários?"
+                        : "Nenhum cenário gerado para mostrar. Reveja o XML ou ajuste o prompt."}
+                    </p>
+                    <textarea
+                      value={iaScenarios}
+                      readOnly
+                      rows={10}
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
       </div>
 
