@@ -11,7 +11,7 @@ function App() {
   const [iaXml, setIaXml] = useState('');
   const [iaScenarios, setIaScenarios] = useState('');
   const [iaLoading, setIaLoading] = useState(false);
-
+  const [iaFormat, setIaFormat] = useState('gherkin'); // 'gherkin' ou 'manual'
   const handleGenerateIAScenarios = async () => {
     setIaLoading(true);
     try {
@@ -87,7 +87,7 @@ function App() {
       }
       const data = await response.json();
       console.log('Baterias de teste recebidas:', data); // Log para depuração
-  
+
       // Separar baterias pendentes e concluídas
       const pending = data.filter((battery) =>
         battery.scenarios.some((scenario) => scenario.status !== 'pass')
@@ -95,7 +95,7 @@ function App() {
       const completed = data.filter((battery) =>
         battery.scenarios.every((scenario) => scenario.status === 'pass')
       );
-  
+
       setPendingBatteries(pending);
       setCompletedBatteries(completed);
     } catch (error) {
@@ -128,7 +128,7 @@ function App() {
       ? `http://localhost:3000/api/scenarios/${editingId}`
       : 'http://localhost:3000/api/scenarios';
     const method = editingId ? 'PUT' : 'POST';
-  
+
     try {
       const response = await fetch(url, {
         method,
@@ -166,7 +166,7 @@ function App() {
       console.error(`Scenario with ID ${id} not found.`);
       return;
     }
-  
+
     setFormData({
       name: scenario.name || '',
       description: scenario.description || '',
@@ -180,7 +180,7 @@ function App() {
     setEditingId(id);
     setShowDrawer(true); // Abre o menu lateral para edição
   };
-  
+
   // Excluir um cenário
   const handleDelete = async (id) => {
     try {
@@ -194,7 +194,7 @@ function App() {
   // Criar uma bateria de teste
   const handleCreateTestBattery = async ({ ticketNumber, scenarioIds }) => {
     console.log('Criando bateria de teste com os dados:', { ticketNumber, scenarioIds }); // Log para depuração
-  
+
     try {
       const response = await fetch('http://localhost:3000/api/test-batteries', {
         method: 'POST',
@@ -205,13 +205,13 @@ function App() {
           scenario_ids: scenarioIds,
         }),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Erro ao criar bateria de teste:', errorData); // Log detalhado do erro
         throw new Error('Erro ao criar bateria de teste');
       }
-  
+
       const newBattery = await response.json();
       console.log('Bateria criada com sucesso:', newBattery); // Log de sucesso
       fetchTestBatteries(); // Atualiza as baterias após criar
@@ -246,8 +246,8 @@ function App() {
         <button onClick={toggleSelectionMode}>
           {isSelecting ? 'Cancel Selection' : 'Select Scenarios'}
         </button>
-      {/* Formulário IA */}          
-      </div> 
+        {/* Formulário IA */}
+      </div>
       {showIAForm && <div className="drawer-overlay open" onClick={() => setShowIAForm(false)}></div>}
       <div className={`drawer ${showIAForm ? 'open' : ''}`}>
         <div className="drawer-header">
@@ -264,6 +264,14 @@ function App() {
             rows={8}
             style={{ width: '100%' }}
           />
+          <select
+            value={iaFormat}
+            onChange={e => setIaFormat(e.target.value)}
+            style={{ width: '100%', marginBottom: '10px' }}
+          >
+            <option value="gherkin">Gherkin</option>
+            <option value="manual">Manual (Estruturado)</option>
+          </select>
           <button onClick={handleGenerateIAScenarios} disabled={iaLoading}>
             {iaLoading ? 'A gerar...' : 'Gerar Cenários com IA'}
           </button>
@@ -279,7 +287,7 @@ function App() {
             </div>
           )}
         </div>
-      </div> 
+      </div>
 
       {/* Menu lateral */}
       {showDrawer && <div className="drawer-overlay open" onClick={() => setShowDrawer(false)}></div>}
@@ -318,7 +326,7 @@ function App() {
         />
       )}
 
-      {/* Lista de baterias de teste */} 
+      {/* Lista de baterias de teste */}
       <div>
         <h2>Pending Test Batteries</h2>
         {pendingBatteries.map((battery) => (
@@ -331,7 +339,7 @@ function App() {
         ))}
       </div>
 
-      
+
     </div>
   );
 }
