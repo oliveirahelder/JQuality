@@ -3,6 +3,13 @@ const ScenarioList = ({ scenarios, isSelecting, selectedScenarios, onSelect, onE
     return <p className="scenario-list-empty">No scenarios found. Try searching for something else.</p>;
   }
 
+  // Função utilitária para garantir sempre string
+  const fieldToString = field => {
+    if (Array.isArray(field)) return field.join('\n');
+    if (field && typeof field === "object") return JSON.stringify(field);
+    return field || "";
+  };
+
   return (
     <table className="scenario-table">
       <thead>
@@ -31,20 +38,20 @@ const ScenarioList = ({ scenarios, isSelecting, selectedScenarios, onSelect, onE
                 />
               </td>
             )}
-            <td>{scenario.name}</td>
-            <td>{scenario.description}</td>
-            <td>{scenario.pre_conditions}</td>
-            <td>{scenario.steps}</td>
-            <td>{scenario.expected_results}</td>
-            <td>{scenario.priority}</td>
-            <td>{scenario.tags}</td>
+            <td>{fieldToString(scenario.name)}</td>
+            <td>{fieldToString(scenario.description)}</td>
+            <td>{fieldToString(scenario.pre_conditions)}</td>
+            <td>{fieldToString(scenario.steps)}</td>
+            <td>{fieldToString(scenario.expected_results)}</td>
+            <td>{fieldToString(scenario.priority)}</td>
+            <td>{fieldToString(scenario.tags)}</td>
             <td>
               <span
                 className={`status-badge ${
                   scenario.status === 'active' ? 'status-active' : 'status-inactive'
                 }`}
               >
-                {scenario.status}
+                {fieldToString(scenario.status)}
               </span>
             </td>
             {!preview && (

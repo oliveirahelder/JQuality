@@ -332,12 +332,23 @@ function App() {
                   style={{ width: '100%', margin: '12px 0' }}
                   disabled={selectedPreviewScenarios.length === 0}
                   onClick={async () => {
+                    const fixField = f =>
+                      Array.isArray(f) ? f.join('\n') :
+                        (typeof f === 'object' && f !== null) ? JSON.stringify(f) : (f || '');
+
                     for (const tmp_id of selectedPreviewScenarios) {
                       const scenario = scenariosArrWithTmpIds.find(s => s.tmp_id === tmp_id);
+                      const scenarioFixed = {
+                        ...scenario,
+                        pre_conditions: fixField(scenario.pre_conditions),
+                        steps: fixField(scenario.steps),
+                        expected_results: fixField(scenario.expected_results),
+                        tags: fixField(scenario.tags),
+                      };
                       await fetch('http://localhost:3000/api/scenarios', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(scenario)
+                        body: JSON.stringify(scenarioFixed)
                       });
                     }
                     setSelectedPreviewScenarios([]);

@@ -320,15 +320,10 @@ A tua tarefa:
 1. Extrai toda a informação relevante da descrição, comentários e épico (caso exista).
 2. Decompõe o pedido funcional em TODOS os cenários de teste MANUAIS que garantam a cobertura funcional do que foi pedido para ser desenvolvido e assim o QA poder testar.
 3. Inclui casos para cada funcionalidade do pedido escrito na descrição, comentários e épico (se existir). Cada cenário deve ser claro, completo e autónomo.
-4. Apresenta a resposta como um array JSON (não string!) onde cada cenário é UM objeto com os seguintes campos: name, description, pre_conditions, steps, expected_results, tags, priority, status em ingles.
+4. Em ingles.
+5. Não agrupes tudo num só cenário! Identifica explicitamente cada funcionalidade do pedido e transforma-a num cenário distinto para QA.
+6. “Only output an array of JSON objects, no preamble, no explanations. Each object should have: name, description, pre_conditions, steps, expected_results, tags.”
 
-Exemplo de resposta:
-[
- ...
-]
-Não agrupes tudo num só cenário! Identifica explicitamente cada funcionalidade do pedido e transforma-a num cenário distinto para QA.
-
-ATENÇÃO: Responde APENAS com o array JSON SEM texto antes ou depois. NÃO uses markdown com \`\`\`, nem explica, nem inclui comentários!
 O XML do ticket é:
 ${xml}
 `;
