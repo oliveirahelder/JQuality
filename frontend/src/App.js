@@ -438,12 +438,42 @@ function App() {
       <div>
         <h2>Pending Test Batteries</h2>
         {pendingBatteries.map((battery) => (
-          <TestBattery key={battery.id} battery={battery} />
+          <div key={battery.id} style={{ position: "relative", marginBottom: 24 }}>
+            <TestBattery
+              battery={battery}
+              onMoveToCompleted={(batComp) => {
+                setPendingBatteries(pendingBatteries.filter(b => b.id !== batComp.id));
+                setCompletedBatteries([...completedBatteries, batComp]);
+              }}
+            />
+          </div>
         ))}
 
         <h2>Completed Test Batteries</h2>
         {completedBatteries.map((battery) => (
-          <TestBattery key={battery.id} battery={battery} />
+          <div key={battery.id} style={{ position: "relative", marginBottom: 24 }}>
+            <TestBattery key={battery.id} battery={battery} readOnly />
+            <button
+              style={{
+                position: "absolute",
+                right: 0,
+                top: 8,
+                background: "crimson",
+                color: "#fff",
+                borderRadius: 6,
+                border: "none",
+                padding: "6px 14px",
+                fontWeight: 600,
+                cursor: "pointer"
+              }}
+              onClick={async () => {
+                await fetch(`http://localhost:3000/api/batteries/${battery.id}/archive`, { method: 'PATCH' });
+                fetchTestBatteries();
+              }}
+            >
+              Apagar
+            </button>
+          </div>
         ))}
       </div>
 

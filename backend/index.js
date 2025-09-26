@@ -80,6 +80,7 @@ app.get('/api/test-batteries', (req, res) => {
     FROM test_batteries tb
     LEFT JOIN test_battery_scenarios tbs ON tb.id = tbs.battery_id
     LEFT JOIN scenarios s ON tbs.scenario_id = s.id
+    WHERE tb.archived = 0
   `;
   db.all(query, [], (err, rows) => {
     if (err) {
@@ -257,13 +258,65 @@ app.post('/api/test-batteries', (req, res) => {
   );
 });
 
+app.patch('/api/batteries/:id/archive', (req, res) => {
+  const batteryId = req.params.id;
+  db.run("UPDATE test_batteries SET archived = 1 WHERE id = ?", [batteryId], function (err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
 app.get('/api/test-batteries', (req, res) => {
   const query = `
     SELECT tb.id AS battery_id, tb.name AS battery_name, tb.ticket_number, tbs.scenario_id, tbs.status, s.name AS scenario_name
     FROM test_batteries tb
     LEFT JOIN test_battery_scenarios tbs ON tb.id = tbs.battery_id
     LEFT JOIN scenarios s ON tbs.scenario_id = s.id
+    WHERE tb.archived = 0
   `;
+  db.all(query, [], (err, rows) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else {
+      const batteries = rows.reduce((acc, row) => {
+        const battery = acc.find((b) => b.id === row.battery_id);
+        if (battery) {
+          battery.scenarios.push({
+            id: row.scenario_id,
+            name: row.scenario_name,
+            status: row.status,
+          });
+        } else {
+          acc.push({
+            id: row.battery_id,
+            name: row.battery_name,
+            ticket_number: row.ticket_number,
+            scenarios: row.scenario_id
+              ? [
+                  {
+                    id: row.scenario_id,
+                    name: row.scenario_name,
+                    status: row.status,
+                  },
+                ]
+              : [],
+          });
+        }
+        return acc;
+      }, []);
+      res.json(batteries);
+    }
+  });
+});
+
+app.get('/api/test-batteries/history', (req, res) => {
+  const query = `
+    SELECT tb.id AS battery_id, tb.name AS battery_name, tb.ticket_number, tbs.scenario_id, tbs.status, s.name AS scenario_name
+    FROM test_batteries tb
+    LEFT JOIN test_battery_scenarios tbs ON tb.id = tbs.battery_id
+    LEFT JOIN scenarios s ON tbs.scenario_id = s.id
+    WHERE tb.archived = 1
+  `; 
   db.all(query, [], (err, rows) => {
     if (err) {
       res.status(500).json({ error: err.message });
